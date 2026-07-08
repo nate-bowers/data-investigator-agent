@@ -5,16 +5,18 @@ import { type ChangeEvent, useRef, useState } from "react";
 interface Props {
   running: boolean;
   backend: string;
+  datasetId?: string;
+  onDatasetChange: (id?: string) => void;
   onRun: (question: string, datasetId?: string) => void;
   onStop: () => void;
   onReplay: () => void;
 }
 
 // Question input + dataset picker (bundled demo, or upload your own CSV) + run/stop
-// + a "play recorded run" escape hatch. NOT a chat box — a single investigation kickoff.
-export function QuestionBox({ running, backend, onRun, onStop, onReplay }: Props) {
+// + a "play recorded run" escape hatch. `datasetId` is owned by the page so the
+// context panel can show the current dataset's schema.
+export function QuestionBox({ running, backend, datasetId, onDatasetChange, onRun, onStop, onReplay }: Props) {
   const [question, setQuestion] = useState("Why did signups drop in March?");
-  const [datasetId, setDatasetId] = useState<string | undefined>(undefined); // undefined -> demo
   const [uploadName, setUploadName] = useState<string | null>(null);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -32,12 +34,12 @@ export function QuestionBox({ running, backend, onRun, onStop, onReplay }: Props
         throw new Error(body?.detail ?? res.statusText);
       }
       const { dataset_id } = (await res.json()) as { dataset_id: string };
-      setDatasetId(dataset_id);
+      onDatasetChange(dataset_id);
       setUploadName(file.name);
     } catch (err) {
       setUploadErr(String((err as Error).message ?? err));
       setUploadName(null);
-      setDatasetId(undefined);
+      onDatasetChange(undefined);
     } finally {
       e.target.value = "";
     }
@@ -46,7 +48,7 @@ export function QuestionBox({ running, backend, onRun, onStop, onReplay }: Props
   return (
     <div className="question-box">
       <label className="qb-label" htmlFor="qb-input">
-        Ask a question about a dataset
+        Ask a question about the data
       </label>
       <div className="qb-row">
         <input
@@ -82,7 +84,7 @@ export function QuestionBox({ running, backend, onRun, onStop, onReplay }: Props
           <button
             className="linklike"
             onClick={() => {
-              setDatasetId(undefined);
+              onDatasetChange(undefined);
               setUploadName(null);
             }}
             disabled={running}

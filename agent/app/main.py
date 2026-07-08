@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from . import config, datasets, loop
+from . import config, datasets, loop, tools
 from .events import SSEEmitter
 from .ratelimit import limiter
 
@@ -78,7 +78,7 @@ SSE_HEADERS = {
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "model": config.MODEL, "build": "rate-limit-cache-1"}
+    return {"status": "ok", "model": config.MODEL, "build": "context-panel-1"}
 
 
 def _client_ip(request: Request) -> str:
@@ -87,6 +87,27 @@ def _client_ip(request: Request) -> str:
     if xff:
         return xff.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
+
+
+def _first_sentence(text: str) -> str:
+    return text.split(". ")[0].rstrip(".") + "."
+
+
+@app.get("/context")
+def context(dataset_id: str | None = None) -> dict:
+    """What's going INTO the agent: the tools it can call + the dataset schema.
+    Powers the viewer's context panel so the agent's capabilities and the data are
+    visible before it runs (and after a CSV upload)."""
+    try:
+        dataset = datasets.describe(dataset_id)
+    except Exception:
+        dataset = None
+    return {
+        "tools": [
+            {"name": t["name"], "description": _first_sentence(t["description"])} for t in tools.TOOLS
+        ],
+        "dataset": dataset,
+    }
 
 
 class InvestigateRequest(BaseModel):

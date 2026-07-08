@@ -50,6 +50,20 @@ def save_upload(raw: bytes) -> str:
     return "upload:" + token
 
 
+def describe(dataset_id: str | None) -> dict:
+    """Columns + row count for the context panel — so the UI can show what the
+    agent is looking at before it runs. Cheap for the demo + size-capped uploads."""
+    import pandas as pd
+
+    df = pd.read_csv(resolve(dataset_id))
+    is_demo = not dataset_id or dataset_id == config.DEMO_DATASET_ID
+    return {
+        "name": "signups.csv" if is_demo else "your upload",
+        "columns": [str(c) for c in df.columns],
+        "rows": int(len(df)),
+    }
+
+
 def cleanup_expired() -> None:
     """Best-effort TTL sweep so uploaded CSVs don't accumulate on the box."""
     now = time.time()

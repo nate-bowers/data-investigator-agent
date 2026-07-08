@@ -1,12 +1,12 @@
 import type { StepState } from "@/lib/investigator/reducer";
 
-// One reasoning step, rendered as a distinct unit on the rail: the model's
-// reasoning -> its hypothesis -> the code it wrote -> the result (or the error it
-// hit) -> a chart if it chose one. An errored step turns amber and shows the
-// self-correction badge; the fix lands in a following card.
+// One reasoning step, framed as an explicit tool call: the agent decides to CALL a
+// tool -> the INPUT it passed -> what it RETURNED. An errored step turns amber and
+// shows the self-correction badge; the fix lands in a following card.
 export function StepCard({ step }: { step: StepState }) {
   const errored = step.status === "error";
   const isOrient = step.phase === "orient";
+  const tool = isOrient ? "profile_data" : "run_pandas";
 
   return (
     <article className={`step-card${errored ? " step-error" : ""}`}>
@@ -18,7 +18,10 @@ export function StepCard({ step }: { step: StepState }) {
 
       <div className="step-body">
         <div className="step-head">
-          <span className="phase-tag">{isOrient ? "ORIENT" : `STEP ${step.step}`}</span>
+          <span className="tool-call">
+            calls <code>{tool}</code>
+          </span>
+          <span className="phase-tag">{isOrient ? "orient" : `step ${step.step}`}</span>
           {errored && <span className="badge badge-error">query failed</span>}
           {step.retry && <span className="badge badge-recover">self-correcting →</span>}
           {step.retryExhausted && <span className="badge badge-error">gave up — pivoting</span>}
@@ -28,22 +31,30 @@ export function StepCard({ step }: { step: StepState }) {
         {step.hypothesis && <p className="hypothesis">{step.hypothesis}</p>}
 
         {step.code && (
-          <pre className="code">
-            <code>{step.code.trim()}</code>
-          </pre>
+          <div className="io">
+            <span className="io-label">input</span>
+            <pre className="code">
+              <code>{step.code.trim()}</code>
+            </pre>
+          </div>
         )}
 
-        {step.error ? (
-          <pre className="result result-error">{step.error.trim()}</pre>
-        ) : step.result ? (
-          <pre className="result">{step.result.trim()}</pre>
-        ) : step.status === "running" ? (
-          <div className="running-dots" aria-label="working">
-            <span />
-            <span />
-            <span />
+        {(step.error || step.result || step.status === "running") && (
+          <div className="io">
+            <span className="io-label">returned</span>
+            {step.error ? (
+              <pre className="result result-error">{step.error.trim()}</pre>
+            ) : step.result ? (
+              <pre className="result">{step.result.trim()}</pre>
+            ) : (
+              <div className="running-dots" aria-label="working">
+                <span />
+                <span />
+                <span />
+              </div>
+            )}
           </div>
-        ) : null}
+        )}
 
         {step.chart && (
           <figure className="chart">
