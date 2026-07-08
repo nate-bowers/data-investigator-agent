@@ -29,7 +29,7 @@ The core is a hand-written loop, not the SDK's tool-runner and not a managed-age
 
 ```mermaid
 flowchart TD
-    Q([Question + dataset]) --> P[Force <code>profile_data</code><br/>look at the real columns first]
+    Q([Question + dataset]) --> P[Force profile_data<br/>look at the real columns first]
     P --> M{{Ask the model:<br/>what next?}}
     M -->|calls run_pandas| R[Run the pandas snippet<br/>in the sandbox]
     R -->|result| FB[Feed the result back]
