@@ -11,7 +11,7 @@ services:
     runtime: docker
     plan: free
     region: oregon
-    branch: data-investigator-agent-scaffold
+    branch: main
     rootDir: agent
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health

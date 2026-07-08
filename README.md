@@ -1,158 +1,159 @@
 # Data Investigator
 
-Give it a dataset and an investigative question — *"why did signups drop in March?"*
-— and it **investigates**. A hand-written agent loop hypothesizes, writes and runs
-its own pandas, reads each result to decide the next move, **self-corrects broken
-code from the traceback**, and stops when it has the answer. The path is not
-hardcoded; the data drives it.
+**A data-analysis agent that investigates a dataset the way a person would — one question at a time, deciding each step from what the last one revealed.**
 
-You watch it think: a live **investigation viewer** (not a chatbot) streams each
-step — the reasoning, the code it wrote, the result, its decision to continue or
-stop — and renders a **grounded final report** where every claim links to the step
-whose result supports it.
+🔗 **Live demo → https://web-mu-three-lu56la822j.vercel.app/investigator**
 
-## What it proves (the four things)
+I built Data Investigator to show what *agent orchestration* actually looks like under the hood — not a single prompt that returns an answer, but a real loop where a language model writes its own pandas, runs it in a sandbox, reads the result, and decides its next move. You hand it a dataset and an investigative question like *"why did signups drop in March?"* and you **watch it think**: hypothesize → run code → read the result → follow the lead → fix its own broken query → stop when it actually has the answer.
 
-This is a demonstration of **agent orchestration**, not text-to-pandas. Every run
-visibly shows all four:
+**Nothing about the path is hardcoded. The data drives it.** That's the whole point — and the UI is built to make it visible: you see the tools the agent can call, the data it's looking at, and every tool call streaming in as `calls run_pandas → input → returned`.
 
-1. **Runtime tool choice** — the LLM decides what to compute next; there is no
-   hardcoded sequence. (In the demo run it chose *on its own* to segment by channel,
-   then to check the campaign column.)
-2. **A real loop** — each step's result informs the next.
-3. **Self-termination** — the agent decides when it has answered (calls `finish`);
-   the loop cap is a separate, visible safety net.
-4. **Reliability under mess** — a broken query is caught, the verbatim traceback is
-   fed back, and the model rewrites its own code.
+---
 
-## Architecture (split hosting)
+## What it demonstrates
 
-```
-Vercel · web/ (Next.js viewer)  ──POST /investigate──►  Backend · agent/ (FastAPI)
-       ▲                                                    │ manual agent loop
-       └──────── text/event-stream (SSE) ───────────────────┤ ├─► Anthropic API (Sonnet/Opus)
-                 one step-event at a time                    │ └─► pandas sandbox (subprocess, no network)
-```
+Every run visibly shows the four things that separate a real **agent** from a scripted **workflow**:
 
-- **`agent/`** — Python + FastAPI. The manual agentic loop (`app/loop.py`) over a
-  3-tool surface, plus an isolated pandas sandbox that runs the LLM's code safely.
-  Streams the decision log as step-level SSE.
-- **`web/`** — Next.js investigation viewer, deployed as a portfolio section at
-  `/investigator`. One reducer renders both live runs and a committed recorded run.
-- **`docs/how-the-loop-works.md`** — the orchestration, explained end to end.
+| | |
+|---|---|
+| **Runtime tool choice** | the model decides what to compute next — there is no fixed sequence |
+| **A real loop** | each step's result feeds the next decision |
+| **Self-termination** | it decides when it has answered (and I can prove it wasn't a counter) |
+| **Reliability under mess** | a broken query is caught, the traceback is fed back, and it rewrites its own code |
 
-## How the agent works (the short version)
+---
 
-It's a `while` loop, not a sequence:
+## The agent loop
 
-```
-ask the model what to do  →  it emits a tool call  →  run the tool
-      ↑                                                     │
-      └───────────  feed the result back  ←─────────────────┘
+The core is a hand-written loop, not the SDK's tool-runner and not a managed-agent service — because the loop *is* the project, and I wanted it legible. It's a `while` loop: ask the model what to do, run whatever tool it asked for, feed the result back, repeat until it calls `finish`.
+
+```mermaid
+flowchart TD
+    Q([Question + dataset]) --> P[Force <code>profile_data</code><br/>look at the real columns first]
+    P --> M{{Ask the model:<br/>what next?}}
+    M -->|calls run_pandas| R[Run the pandas snippet<br/>in the sandbox]
+    R -->|result| FB[Feed the result back]
+    R -->|traceback| ER[Feed the error back<br/>is_error: true]
+    ER --> M
+    FB --> M
+    M -->|calls finish| G[Ground every claim<br/>against a real result]
+    G --> ANS([Answer + full trace])
+    M -.->|hit step / token cap| G
 ```
 
-Three tools: `profile_data` (forced first, so it never hallucinates a column),
-`run_pandas` (the workhorse — writes a snippet, optionally chooses a chart), and
-`finish` (the self-termination signal). A sandbox error returns the **verbatim
-traceback** as a `tool_result` with `is_error: true`, and the model rewrites next
-turn — that's the self-correction. Loop caps + a token budget prevent spirals;
-grounding enforces "no result, no claim" in code. Full walkthrough in
-[`docs/how-the-loop-works.md`](docs/how-the-loop-works.md).
+The only thing I force is the very first move — `profile_data`, so the agent looks at the real schema before it hypothesizes and never invents a column. After that, `tool_choice` is `auto` and the model is on its own. **Delete every `if step ==` line in the loop and it's still an agent** — those lines are only the first-step nudge and the safety caps.
 
-## The sandbox (running untrusted, LLM-written code)
+---
 
-The agent writes its own pandas — and can run it over an uploaded CSV — so the
-sandbox is the real safety boundary and was built first:
+## Anatomy of a run
 
-- **subprocess isolation** — a bad snippet dies as a child; the web server is never touched;
-- **resource limits** — RLIMIT_CPU (portable) + RLIMIT_AS (Linux) + a wall-clock timeout → `killpg`;
-- **no network** — `unshare -n` on Linux + an in-child socket guard everywhere;
-- **bounded output + verbatim tracebacks** — big frames are summarized; errors come back whole for self-correction.
-
-The dataset is passed by path; the data itself never crosses into the request body.
-Container isolation is a one-file upgrade behind the same `run_pandas` contract.
-
-## Repo layout
+Here's an actual run on the demo dataset (*"why did signups drop in March?"*) — the reasoning path the agent chose, entirely on its own:
 
 ```
-agent/            Python backend (FastAPI + agent loop + sandbox)
-  app/loop.py       ★ the manual agentic loop
-  app/tools.py      the 3 tool schemas
-  app/prompts.py    the investigator system prompt
-  app/sandbox.py    isolated pandas execution
-  app/grounding.py  "no result, no claim"
-  data/             the demo dataset + its seeder
-  recordings/       the committed flawless run (demo insurance)
-  tests/            sandbox (8) + mocked loop (4)
-web/              Next.js investigation viewer
-  lib/investigator/  events + reducer + the live/replay hook
-  components/investigator/  StepCard, TraceStream, LoopMeter, QuestionBox, FinalReport
-docs/             how-the-loop-works.md + the whiteboard quiz
+① profile_data      → sees signup_date / campaign_id / activated are strings, 2,224 rows
+② run_pandas        → monthly totals … ValueError: date "unknown" won't parse
+   └─ self-corrects → re-runs with errors='coerce' → confirms the March dip
+③ run_pandas        → signups by channel × month … only `social` collapses in March
+④ run_pandas        → social by campaign_id … cmp_social_2024 is absent all March
+⑤ run_pandas + bar  → weekly social signups, Feb vs Mar → chart shows a hard stop
+⑥ finish            → "the social campaign was paused" — 6 findings, each grounded
 ```
 
-## Run locally
+It hit a broken date parse and fixed itself (②), branched from *total* to *channel* to *campaign* because each result pointed there, **chose** to draw a chart, and stopped once the causal chain held. A committed recording of this exact run replays on the live page even when the backend is asleep.
+
+---
+
+## Architecture
+
+Split hosting: a static viewer on Vercel, the CPU-bound agent + sandbox on an always-on Python host, the model behind an API.
+
+```mermaid
+flowchart LR
+    subgraph browser [Browser · Vercel]
+      V[Next.js investigation viewer]
+    end
+    subgraph back [FastAPI backend · Render]
+      L[Manual agent loop]
+      S[pandas sandbox<br/>subprocess · no network]
+    end
+    C[Anthropic API<br/>Claude Sonnet 4.6]
+    V -->|POST /investigate| L
+    L -.->|SSE: one step-event at a time| V
+    L <-->|tool calls + results| C
+    L <-->|run_pandas| S
+```
+
+The backend streams its **decision log** as step-level Server-Sent Events — the same stream the UI renders live and the thing I'd debug from. There's no separate logging pass; the trace *is* the log.
+
+---
+
+## Running LLM-written code safely (the sandbox)
+
+The agent writes and runs its own pandas — including over an uploaded CSV — so the sandbox is the real risk surface, and I built it first:
+
+- **Subprocess isolation** — a bad snippet dies as a child; the web server is never touched.
+- **Resource limits** — `RLIMIT_CPU` + `RLIMIT_AS` (floored so numpy still imports on Linux) + a wall-clock timeout that `killpg`s the whole process group.
+- **No network** — `unshare -n` on Linux plus an in-process socket guard everywhere.
+- **Bounded output, verbatim tracebacks** — big frames are summarized to a head + shape; errors come back *whole*, which is exactly the fuel the self-correction loop needs.
+
+The dataset is passed by path; the data itself never crosses into the request body. Swapping the subprocess for a locked-down container is a one-file change behind the same `run_pandas` contract.
+
+---
+
+## Reliability & cost
+
+Things I built in from the start, not bolted on:
+
+- **Grounding** — every claim in the final report must reference a step that produced a real result. Enforced in code (`grounding.py`), not just asked for in the prompt; a broken evidence link renders as broken in the UI.
+- **Loop cap + token budget** — checked before every model call, so a run can't spiral or overspend.
+- **Self-correction** — a sandbox error returns the traceback as a `tool_result` with `is_error: true`; the model reads it and rewrites, capped per-step so a hopeless snippet can't loop forever.
+- **Prompt caching** — one cache breakpoint follows the growing conversation prefix, so tools + system + prior turns are re-read at ~0.1×. Roughly halves the cost of a run with zero quality change.
+- **Rate limiting** — the public `/investigate` endpoint is capped per-IP and globally per day (returns `429` before any tokens are spent), with an Anthropic Console spend cap as the hard backstop.
+
+---
+
+## Tech stack
+
+- **Backend** — Python 3.12, FastAPI, the Anthropic Python SDK (Claude **Sonnet 4.6**), pandas, matplotlib. A hand-written agentic loop; a subprocess sandbox. Deployed on **Render**.
+- **Frontend** — Next.js 15 (App Router) + React 19 + TypeScript. One reducer renders both live runs and the recorded run. Deployed on **Vercel**.
+- **Design notes** — a fuller writeup of how the loop works lives in [`docs/how-the-loop-works.md`](docs/how-the-loop-works.md).
+
+---
+
+## Run it locally
 
 ```bash
 # Backend
 cd agent
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env            # then add your ANTHROPIC_API_KEY
-python data/generate_signups.py # (re)build the demo dataset
+cp .env.example .env                # add your ANTHROPIC_API_KEY
+python data/generate_signups.py     # (re)build the demo dataset
 uvicorn app.main:app --reload
 
 # Frontend (separate terminal)
 cd web
 npm install
-cp .env.local.example .env.local   # NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-npm run dev                         # open http://localhost:3000/investigator
+cp .env.local.example .env.local    # NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+npm run dev                          # → http://localhost:3000/investigator
 ```
 
-Model defaults to `claude-sonnet-4-6` (fast/cheap for a live click); set
-`MODEL=claude-opus-4-8` for the strongest reasoning.
+Tests: `cd agent && python -m pytest` — sandbox isolation, the mocked agent loop, and the rate limiter.
 
-## Deploy
+---
 
-- **Backend → Fly.io** (or Railway/Koyeb): `fly launch --no-deploy`, then
-  `fly secrets set ANTHROPIC_API_KEY=...`, then `fly deploy` (from `agent/`; a
-  `Dockerfile` + `fly.toml` are included; always-on, no idle sleep).
-- **Frontend → Vercel**: import the repo with **Root Directory = `web/`**, set
-  `NEXT_PUBLIC_BACKEND_URL` to the backend URL.
-- **CORS**: set `ALLOWED_ORIGINS` on the backend to your Vercel production URL.
-- **Demo insurance**: `agent/recordings/signups-march-dip.json` is committed to
-  `web/public/recordings/` and replays client-side, so a cold backend never breaks
-  a live demo.
+## Project layout
 
-## Demo
-
-Dataset: `agent/data/signups.csv` (~2,200 signups, Jan–Jun) with a planted,
-non-obvious story — total signups dip in March, but only the **social** channel
-collapses, and its `campaign_id` goes null that month (a paused campaign, not lost
-demand). A few unparseable dates make the agent's first date-parse fail and
-self-correct.
-
-Ask **"Why did signups drop in March?"** and watch it hypothesize, hit a broken
-query and fix itself, segment by channel, connect the collapse to the paused
-campaign, chart the trend, and self-stop with a grounded answer.
-
-> **The money line:** *"Here's the trace — it decided each step from the last
-> result, caught its own error and fixed it, chose how to visualize the finding, and
-> stopped when it had the answer. None of that path was hardcoded — the data drove
-> it."*
-
-## Tests
-
-```bash
-cd agent && python -m pytest      # sandbox isolation (8) + mocked agent loop (4)
 ```
-
-## Design decisions
-
-- **Manual loop, not the SDK tool-runner or Managed Agents** — hiding the loop
-  would defeat the point; this repo *is* the orchestration, written to be read.
-- **Chart choice is a field on `run_pandas`, not a separate tool** — it welds the
-  chart to the result that motivated it and keeps the loop at three tools.
-- **Grounding enforced in code** — every report claim references a real result, or
-  it's flagged; a broken evidence link renders as broken.
-- **Split hosting** — the viewer on Vercel, the CPU-bound agent + sandbox on an
-  always-on Python host, the LLM behind an API.
+agent/            Python backend
+  app/loop.py       the manual agentic loop (the heart of it)
+  app/tools.py      the 3 tool schemas the model sees
+  app/sandbox.py    isolated pandas execution
+  app/grounding.py  "no result, no claim"
+  data/             the demo dataset + its seeder
+  recordings/       the committed flawless run (demo insurance)
+web/              Next.js viewer
+  lib/investigator/         events + reducer + the live/replay hook
+  components/investigator/  the context panel, step cards, loop meter, report
+docs/             how-the-loop-works.md
+```
