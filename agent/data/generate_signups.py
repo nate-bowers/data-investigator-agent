@@ -13,9 +13,10 @@ The story the agent should uncover from "why did signups drop in March?":
 Red herring: `activated` is stored as the strings "yes"/"no" (as messy CSVs often
 are — and unlike "true"/"false", pandas does NOT coerce these to bool), so a naive
 activation-rate query (`.mean()`) throws a TypeError — a false lead that forces a
-traceback -> self-correction before the agent discards it. `signup_date` is also a
-plain string, so a naive `.dt.month` throws until the agent converts it — another
-natural self-correction opportunity.
+traceback -> self-correction before the agent discards it. `signup_date` is a plain
+string AND a few rows hold the unparseable value "unknown", so the agent's first
+`pd.to_datetime(...)` raises until it adds errors='coerce' — a reliable, realistic
+self-correction on the very first analytical step.
 
 Run:  python agent/data/generate_signups.py
 """
@@ -82,6 +83,13 @@ def main() -> None:
                         "activated": "yes" if rng.random() < p_act else "no",
                     }
                 )
+
+    # Inject a handful of unparseable dates (messy real-world data). The agent's
+    # first date conversion `pd.to_datetime(...)` will RAISE until it adds
+    # errors='coerce' — a realistic, near-guaranteed self-correction trigger.
+    # Placed away from the top so the profile's head(5) sample still looks clean.
+    for idx in rng.sample(range(60, len(rows)), 8):
+        rows[idx]["signup_date"] = "unknown"
 
     out = os.path.join(os.path.dirname(__file__), "signups.csv")
     cols = ["signup_date", "user_id", "channel", "campaign_id", "country", "device", "activated"]

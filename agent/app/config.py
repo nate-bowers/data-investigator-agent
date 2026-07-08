@@ -35,7 +35,7 @@ MODEL = os.getenv("MODEL", "claude-sonnet-4-6")
 MAX_OUTPUT_TOKENS = _int("MAX_OUTPUT_TOKENS", 8000)
 
 # --- Loop caps (reliability) --------------------------------------------------
-MAX_STEPS = _int("MAX_STEPS", 12)
+MAX_STEPS = _int("MAX_STEPS", 15)
 MAX_RETRIES_PER_STEP = _int("MAX_RETRIES_PER_STEP", 3)
 TOKEN_BUDGET = _int("TOKEN_BUDGET", 200_000)
 

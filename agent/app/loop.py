@@ -137,7 +137,7 @@ def run_investigation(
                 content = run.stdout or run.result_repr or run.error or ""
                 results_by_step[step] = _summarize(content)
                 yield emitter.result(step, "profile", content)
-                tool_results.append(_tool_result(block.id, content, is_error=not run.ok))
+                tool_results.append(_tool_result(block.id, _labeled(step, content), is_error=not run.ok))
             elif block.name == "run_pandas":
                 # Self-correction lives inside this helper. `yield from` streams its
                 # events and hands back the updated consecutive-error count.
@@ -178,7 +178,7 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
         # Block 5: the model chose whether/how to chart; we just render what it asked.
         if run.chart_png and isinstance(chart, dict):
             yield emitter.chart(step, chart.get("kind", ""), chart.get("reason", ""), run.chart_png)
-        tool_results.append(_tool_result(block.id, content, is_error=False))
+        tool_results.append(_tool_result(block.id, _labeled(step, content), is_error=False))
         return 0  # success resets the error streak
 
     # -- error path: the mechanism the whole project is built to show --------------
@@ -192,8 +192,11 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
         tool_results.append(
             _tool_result(
                 block.id,
-                traceback_text
-                + "\n\n[This approach has failed repeatedly. Abandon it and try a different angle, or finish if you can already answer.]",
+                _labeled(
+                    step,
+                    traceback_text
+                    + "\n\n[This approach has failed repeatedly. Abandon it and try a different angle, or finish if you can already answer.]",
+                ),
                 is_error=True,
             )
         )
@@ -201,7 +204,7 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
 
     # Feed the traceback straight back. Next turn the model reads it and rewrites.
     yield emitter.retry(step, consecutive_errors)
-    tool_results.append(_tool_result(block.id, traceback_text, is_error=True))
+    tool_results.append(_tool_result(block.id, _labeled(step, traceback_text), is_error=True))
     return consecutive_errors
 
 
@@ -276,6 +279,12 @@ def _assistant_text(resp) -> str:
 
 def _tool_result(tool_use_id, content, *, is_error) -> dict:
     return {"type": "tool_result", "tool_use_id": tool_use_id, "content": str(content), "is_error": is_error}
+
+
+def _labeled(step: int, content: str) -> str:
+    # Prefix each tool result with its step number so the model can cite it as
+    # `evidence_step` in finish() — it cannot see our internal step indices otherwise.
+    return f"[step {step}]\n{content}"
 
 
 def _summarize(text: str, limit: int = 800) -> str:

@@ -63,7 +63,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-01-06,u1062,paid_search,cmp_ps_2024,CA,mobile,no
 2024-01-06,u1063,paid_search,cmp_ps_2024,US,desktop,no
 2024-01-06,u1064,social,cmp_social_2024,CA,mobile,no
-2024-01-07,u1065,organic,,IN,desktop,yes
+unknown,u1065,organic,,IN,desktop,yes
 2024-01-07,u1066,organic,,UK,mobile,yes
 2024-01-07,u1067,organic,,IN,desktop,yes
 2024-01-07,u1068,organic,,DE,mobile,yes
@@ -130,7 +130,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-01-12,u1129,referral,,US,mobile,yes
 2024-01-12,u1130,referral,,IN,desktop,yes
 2024-01-12,u1131,social,cmp_social_2024,UK,mobile,no
-2024-01-12,u1132,social,cmp_social_2024,US,desktop,no
+unknown,u1132,social,cmp_social_2024,US,desktop,no
 2024-01-12,u1133,social,cmp_social_2024,US,desktop,yes
 2024-01-12,u1134,social,cmp_social_2024,UK,desktop,yes
 2024-01-12,u1135,social,cmp_social_2024,US,desktop,yes
@@ -244,7 +244,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-01-21,u1243,organic,,UK,desktop,yes
 2024-01-21,u1244,organic,,UK,mobile,no
 2024-01-21,u1245,organic,,UK,desktop,yes
-2024-01-21,u1246,organic,,US,desktop,yes
+unknown,u1246,organic,,US,desktop,yes
 2024-01-21,u1247,paid_search,cmp_ps_2024,IN,mobile,yes
 2024-01-21,u1248,paid_search,cmp_ps_2024,CA,mobile,no
 2024-01-21,u1249,paid_search,cmp_ps_2024,IN,desktop,no
@@ -507,7 +507,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-02-10,u1506,paid_search,cmp_ps_2024,UK,desktop,yes
 2024-02-10,u1507,paid_search,cmp_ps_2024,DE,mobile,no
 2024-02-10,u1508,referral,,UK,desktop,yes
-2024-02-10,u1509,referral,,DE,desktop,yes
+unknown,u1509,referral,,DE,desktop,yes
 2024-02-10,u1510,referral,,IN,mobile,yes
 2024-02-10,u1511,social,cmp_social_2024,CA,desktop,no
 2024-02-10,u1512,social,cmp_social_2024,US,mobile,no
@@ -1072,7 +1072,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-04-02,u2071,social,cmp_social_2024,UK,mobile,yes
 2024-04-02,u2072,social,cmp_social_2024,US,mobile,yes
 2024-04-03,u2073,organic,,CA,mobile,yes
-2024-04-03,u2074,paid_search,cmp_ps_2024,IN,mobile,yes
+unknown,u2074,paid_search,cmp_ps_2024,IN,mobile,yes
 2024-04-03,u2075,referral,,CA,desktop,yes
 2024-04-03,u2076,referral,,US,desktop,yes
 2024-04-03,u2077,referral,,IN,mobile,no
@@ -1249,7 +1249,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-04-17,u2248,referral,,CA,desktop,no
 2024-04-17,u2249,referral,,US,mobile,yes
 2024-04-17,u2250,social,cmp_social_2024,US,mobile,no
-2024-04-17,u2251,social,cmp_social_2024,CA,desktop,no
+unknown,u2251,social,cmp_social_2024,CA,desktop,no
 2024-04-17,u2252,social,cmp_social_2024,CA,desktop,yes
 2024-04-18,u2253,organic,,UK,desktop,no
 2024-04-18,u2254,organic,,IN,mobile,yes
@@ -1994,7 +1994,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-06-12,u2993,paid_search,cmp_ps_2024,IN,mobile,no
 2024-06-12,u2994,paid_search,cmp_ps_2024,US,mobile,no
 2024-06-12,u2995,paid_search,cmp_ps_2024,CA,mobile,no
-2024-06-12,u2996,referral,,CA,mobile,no
+unknown,u2996,referral,,CA,mobile,no
 2024-06-12,u2997,social,cmp_social_2024,US,mobile,yes
 2024-06-12,u2998,social,cmp_social_2024,IN,desktop,no
 2024-06-12,u2999,social,cmp_social_2024,IN,desktop,yes
@@ -2059,7 +2059,7 @@ signup_date,user_id,channel,campaign_id,country,device,activated
 2024-06-18,u3058,paid_search,cmp_ps_2024,US,mobile,yes
 2024-06-18,u3059,paid_search,cmp_ps_2024,CA,desktop,yes
 2024-06-18,u3060,paid_search,cmp_ps_2024,US,desktop,no
-2024-06-18,u3061,referral,,US,desktop,no
+unknown,u3061,referral,,US,desktop,no
 2024-06-18,u3062,referral,,US,mobile,no
 2024-06-18,u3063,social,cmp_social_2024,US,desktop,no
 2024-06-18,u3064,social,cmp_social_2024,IN,mobile,no
