@@ -8,21 +8,6 @@ I built Data Investigator to show that I can build a *real* agent from the groun
 
 **Nothing about the path is hardcoded. The data drives it.** The UI is built to make that visible: you see the tools the agent can call, the columns it's looking at, and every tool call streaming in as `calls run_pandas → input → returned`.
 
-> **Scope, honestly:** this is a *single* agent, done well end-to-end — designed, built, hardened, and deployed. The natural next chapter, turning it into genuine *multi-agent* orchestration, is sketched in the [Roadmap](#roadmap-from-one-agent-to-many).
-
----
-
-## What it demonstrates
-
-The whole point is a genuine **agent loop** — the model chooses its own control flow at runtime. Every run shows the four things that separate a real agent from a scripted pipeline:
-
-| | |
-|---|---|
-| **Runtime tool choice** | the model decides what to compute next — there is no fixed sequence |
-| **A real loop** | each step's result feeds the next decision |
-| **Self-termination** | it decides when it has answered (and I can prove it wasn't a counter) |
-| **Reliability under mess** | a broken query is caught, the traceback is fed back, and it rewrites its own code |
-
 ---
 
 ## The agent loop
@@ -78,63 +63,29 @@ The backend streams its **decision log** as step-level Server-Sent Events — th
 
 ---
 
-## Running LLM-written code safely (the sandbox)
+## Sandbox
 
-The agent writes and runs its own pandas — including over an uploaded CSV — so the sandbox is the real risk surface, and I built it first:
-
-- **Subprocess isolation** — a bad snippet dies as a child; the web server is never touched.
-- **Resource limits** — `RLIMIT_CPU` + `RLIMIT_AS` (floored so numpy still imports on Linux) + a wall-clock timeout that `killpg`s the whole process group.
-- **No network** — `unshare -n` on Linux plus an in-process socket guard everywhere.
-- **Bounded output, verbatim tracebacks** — big frames are summarized to a head + shape; errors come back *whole*, which is exactly the fuel the self-correction loop needs.
-
-The dataset is passed by path; the data never crosses into the request body. Swapping the subprocess for a locked-down container is a one-file change behind the same `run_pandas` contract.
+- The agent's LLM-written pandas runs in an isolated, network-less, resource-limited subprocess, so untrusted code can never touch the server.
 
 ---
 
 ## Reliability & cost
 
-Built in from the start, not bolted on:
-
-- **Grounding** — every claim in the final report must reference a step that produced a real result. Enforced in code (`grounding.py`), not just asked for in the prompt; a broken evidence link renders as broken in the UI.
-- **Loop cap + token budget** — checked before every model call, so a run can't spiral or overspend.
-- **Prompt caching** — one cache breakpoint follows the growing conversation prefix, so tools + system + prior turns are re-read at ~0.1×. Roughly halves the cost of a run with zero quality change.
-- **Rate limiting** — the public `/investigate` endpoint is capped per-IP and globally per day (returns `429` before any tokens are spent), with an Anthropic Console spend cap as the hard backstop.
+- Runs on your own Anthropic API key.
+- The public endpoint is rate-limited.
 
 ---
 
-## Engineering highlights
+## Next steps
 
-What this project shows I can do:
-
-- **Ship a full-stack AI product end-to-end** — designed, built, and deployed a typed FastAPI backend and a Next.js/TypeScript frontend, split-hosted on Render + Vercel with CORS, secrets management, and a live streaming API.
-- **Build the hard part myself** — a hand-written agentic loop instead of a framework, so I understand the tool-use handshake, self-correction, and termination at the token level.
-- **Take security seriously** — a genuine sandbox for executing untrusted, model-generated code (isolation, resource limits, no network).
-- **Engineer for reliability** — grounding, loop/token caps, and self-correction so the system can't hallucinate conclusions or run away.
-- **Engineer for cost** — prompt caching and rate limiting to keep a public, paid endpoint cheap and safe.
-- **Test what matters** — pytest over the sandbox isolation, the mocked agent loop, and the rate limiter.
-
----
-
-## Roadmap: from one agent to many
-
-The obvious next step — and the reason the architecture is factored the way it is — is to turn this single agent into a small **orchestrated team**, reusing the exact loop above as the worker:
-
-1. **Coordinator** — decomposes the question into angles ("is the drop real?", "which segment?", "is it a data artifact?").
-2. **Parallel investigators** — fans out N copies of the current loop, each investigating one angle at the same time.
-3. **Critic** — a verifier agent that adversarially tries to refute each finding before it's trusted.
-4. **Synthesizer** — merges the grounded findings into one report that cites which agent found what.
-
-That's the jump from "a well-built agent" to genuine multi-agent orchestration (decompose → parallel map → verify → reduce), with a designed role for each agent.
-
-**Other next steps I'd take toward production:** containerize the sandbox (`docker --network=none --pids-limit`), add tracing + an eval harness to measure investigation quality over time, per-user auth for private datasets, a job queue for long runs, and a custom domain.
+This is a single agent. The natural next step is to turn it into a small **orchestration** project — a coordinator that fans out several investigator agents and synthesizes their findings.
 
 ---
 
 ## Tech stack
 
-- **Backend** — Python 3.12, FastAPI, the Anthropic Python SDK (Claude **Sonnet 4.6**), pandas, matplotlib. A hand-written agentic loop; a subprocess sandbox. Deployed on **Render**.
-- **Frontend** — Next.js 15 (App Router) + React 19 + TypeScript. One reducer renders both live runs and the recorded run. Deployed on **Vercel**.
-- **Design notes** — a fuller writeup of how the loop works is in [`docs/how-the-loop-works.md`](docs/how-the-loop-works.md).
+- **Backend** — Python · FastAPI · Anthropic SDK (Claude Sonnet 4.6) · pandas. Deployed on Render.
+- **Frontend** — Next.js · React · TypeScript. Deployed on Vercel.
 
 ---
 
