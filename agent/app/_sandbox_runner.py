@@ -34,7 +34,12 @@ def _set_limits(cpu_s: int, mem_mb: int) -> None:
     except (ValueError, OSError):
         pass
     if mem_mb:
-        nbytes = mem_mb * 1024 * 1024
+        # RLIMIT_AS caps VIRTUAL address space. numpy/OpenBLAS reserve a large
+        # virtual space on Linux even when resident use is tiny, so a low cap kills
+        # the pandas import outright (fine on macOS, where RLIMIT_AS is a no-op).
+        # Floor it to a numpy-safe minimum; the real guards on a small box are the
+        # OS OOM-killer plus the CPU + wall-clock limits.
+        nbytes = max(mem_mb, 1536) * 1024 * 1024
         try:
             resource.setrlimit(resource.RLIMIT_AS, (nbytes, nbytes))
         except (ValueError, OSError):

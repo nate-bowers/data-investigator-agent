@@ -134,7 +134,7 @@ def run_investigation(
                 yield emitter.hypothesis(step, "Look at the data before hypothesizing.")
                 yield emitter.code(step, snippet)
                 run = run_pandas(snippet, df_path)
-                content = run.stdout or run.result_repr or run.error or ""
+                content = run.stdout or run.result_repr or run.error or run.traceback or ""
                 results_by_step[step] = _summarize(content)
                 yield emitter.result(step, "profile", content)
                 tool_results.append(_tool_result(block.id, _labeled(step, content), is_error=not run.ok))

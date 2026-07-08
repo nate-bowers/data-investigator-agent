@@ -86,6 +86,14 @@ def _scrubbed_env() -> dict[str, str]:
         "MPLBACKEND": "Agg",
         "MPLCONFIGDIR": "/tmp",
         "PYTHONDONTWRITEBYTECODE": "1",
+        # Single-threaded BLAS + capped malloc arenas. Our data is tiny, so this
+        # costs nothing — and it drastically shrinks numpy's VIRTUAL address-space
+        # reservation, which otherwise trips RLIMIT_AS on Linux.
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "MALLOC_ARENA_MAX": "2",
     }
 
 
@@ -176,11 +184,13 @@ def run_pandas(
         # No clean result -> the child was killed hard (kernel OOM, SIGXCPU, segfault).
         rc = proc.returncode
         cpu_killed = rc is not None and rc < 0 and -rc == int(signal.SIGXCPU)
+        stderr = (err or "").strip()
+        tail = stderr.replace("\n", " ")[-400:]
         return SandboxResult(
             ok=False,
             timed_out=cpu_killed,
-            error=f"sandbox exited abnormally (returncode={rc})",
-            traceback=((err or "").strip()[: max_chars * 2] or None),
+            error=f"sandbox exited abnormally (returncode={rc})" + (f": {tail}" if tail else ""),
+            traceback=(stderr[: max_chars * 2] or None),
             duration_ms=dur,
         )
 

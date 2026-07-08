@@ -16,7 +16,7 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:
-      - key: ANTHROPIC_API_KEY
+      - key: _API_KEY
         sync: false # set in the Render dashboard — never committed
       - key: MODEL
         value: claude-sonnet-4-6

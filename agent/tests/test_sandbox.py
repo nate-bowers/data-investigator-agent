@@ -75,7 +75,8 @@ def test_network_is_denied(df_path):
 
 @pytest.mark.skipif(sys.platform == "darwin", reason="RLIMIT_AS is not enforced on macOS")
 def test_memory_cap_linux(df_path):
-    r = run_pandas("x = bytearray(600 * 1024 * 1024)", df_path, mem_mb=256)
+    # RLIMIT_AS is floored to a numpy-safe minimum (1536MB), so allocate above that.
+    r = run_pandas("x = bytearray(2200 * 1024 * 1024)", df_path, mem_mb=2048)
     assert not r.ok  # MemoryError under the address-space cap
 
 

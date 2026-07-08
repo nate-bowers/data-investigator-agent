@@ -77,7 +77,7 @@ SSE_HEADERS = {
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "model": config.MODEL}
+    return {"status": "ok", "model": config.MODEL, "build": "sandbox-linux-fix-1"}
 
 
 class InvestigateRequest(BaseModel):
