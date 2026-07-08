@@ -55,6 +55,10 @@ UPLOAD_DIR = os.path.normpath(os.getenv("UPLOAD_DIR", os.path.join(_HERE, "..", 
 UPLOAD_MAX_BYTES = _int("UPLOAD_MAX_BYTES", 25 * 1024 * 1024)  # 25 MB
 UPLOAD_TTL_S = _int("UPLOAD_TTL_S", 3600)
 
+# --- Rate limiting (the public /investigate endpoint calls a paid API) --------
+RATE_LIMIT_PER_IP_HOUR = _int("RATE_LIMIT_PER_IP_HOUR", 6)
+RATE_LIMIT_GLOBAL_DAY = _int("RATE_LIMIT_GLOBAL_DAY", 150)
+
 # --- CORS ---------------------------------------------------------------------
 # Comma-separated. Includes localhost for dev; add the Vercel prod URL in prod.
 ALLOWED_ORIGINS = [

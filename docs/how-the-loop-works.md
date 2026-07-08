@@ -115,6 +115,29 @@ done` with **no** `cap_hit`. A budget stop has a `cap_hit` before the report.
   logging pass — the thing the demo shows and the thing you'd inspect are the same
   stream.
 
+## 9. Prompt caching (cost)
+
+The API is stateless, so every loop turn re-sends the whole conversation — system +
+tools + *every prior turn*. Without caching you pay full input price for that growing
+prefix on every step, and that's most of a run's cost. So before each
+`messages.create` we set one `cache_control` breakpoint on the last block of the
+latest turn (`_apply_prompt_cache` in `loop.py`). The API writes that prefix to a
+cache once and re-reads it at **~0.1×** on every later turn. We keep exactly *one*
+breakpoint (clearing the old one each turn) because the prefix grows and there's a
+4-breakpoint limit. On Sonnet the cache only engages once the prefix passes ~2048
+tokens — a couple of steps in, which is exactly when it starts to matter. Net effect:
+a full investigation costs roughly half, with zero quality change.
+
+## 10. Rate limiting (protecting a paid endpoint)
+
+`/investigate` is public and calls a paid API — and CORS only stops *browsers* from
+other origins; anyone can curl the backend directly. So `ratelimit.py` caps runs
+**per IP per hour** and **globally per day** (a backstop against distributed abuse),
+returning `429` *before any tokens are spent*; the viewer catches the 429 and offers
+the recorded run. It's in-memory (the free backend is a single instance). The hard
+dollar-backstop underneath it is a spend cap set in the Anthropic Console — the rate
+limit is what stops one burst from draining that cap in an afternoon.
+
 ---
 
 **The whiteboard test:** *"If a reviewer deleted every `if step ==` line, would it

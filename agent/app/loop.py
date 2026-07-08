@@ -25,6 +25,7 @@ Key mechanics worth internalizing (you'll be quizzed on these):
 """
 from __future__ import annotations
 
+import os
 from typing import Any, Iterator, Optional
 
 from . import config, grounding, profile, prompts, tools
@@ -240,6 +241,7 @@ def _model_call(client, messages, *, tool_choice, thinking_on):
     """One Messages API call with the agent's tools. Adaptive thinking is enabled
     except when we force a specific tool (thinking is incompatible with a forced
     tool_choice)."""
+    _apply_prompt_cache(messages)  # cache the growing conversation prefix (~0.1x on re-reads)
     kwargs = dict(
         model=config.MODEL,
         max_tokens=config.MAX_OUTPUT_TOKENS,
@@ -250,7 +252,38 @@ def _model_call(client, messages, *, tool_choice, thinking_on):
     )
     if thinking_on:
         kwargs["thinking"] = {"type": "adaptive"}
-    return client.messages.create(**kwargs)
+    resp = client.messages.create(**kwargs)
+    if os.getenv("DEBUG_USAGE") and getattr(resp, "usage", None):
+        u = resp.usage
+        print(
+            f"[usage] input={u.input_tokens} "
+            f"cache_read={getattr(u, 'cache_read_input_tokens', 0)} "
+            f"cache_write={getattr(u, 'cache_creation_input_tokens', 0)} "
+            f"output={u.output_tokens}",
+            flush=True,
+        )
+    return resp
+
+
+def _apply_prompt_cache(messages) -> None:
+    """Keep exactly ONE prompt-cache breakpoint, on the last block of the last
+    message, so the whole growing prefix (tools + system + every prior turn) is
+    written once and re-read at ~0.1x on each subsequent turn.
+
+    Each loop turn appends more history, so the breakpoint moves forward; we clear
+    the old one first to stay within the 4-breakpoint limit. We only mark
+    list-content turns (our tool_result turns) — a plain-string user turn is skipped
+    (and there's no meaningful prefix to cache that early anyway).
+    """
+    for m in messages:
+        content = m.get("content")
+        if isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict):
+                    block.pop("cache_control", None)
+    last = messages[-1].get("content")
+    if isinstance(last, list) and last and isinstance(last[-1], dict):
+        last[-1]["cache_control"] = {"type": "ephemeral"}
 
 
 def _tokens(resp) -> int:

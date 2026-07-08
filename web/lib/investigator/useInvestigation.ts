@@ -41,7 +41,17 @@ export function useInvestigation() {
           body: JSON.stringify({ question, dataset_id: datasetId ?? null }),
           signal: ctrl.signal,
         });
-        if (!res.ok || !res.body) throw new Error(`backend responded ${res.status}`);
+        if (!res.ok || !res.body) {
+          // Surface the backend's reason (e.g. the rate-limit message) if present.
+          let msg = `backend responded ${res.status}`;
+          try {
+            const j = (await res.json()) as { detail?: string };
+            if (j?.detail) msg = j.detail;
+          } catch {
+            /* non-JSON error body — keep the status message */
+          }
+          throw new Error(msg);
+        }
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();

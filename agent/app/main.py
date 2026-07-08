@@ -17,13 +17,14 @@ import sys
 import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from . import config, datasets, loop
 from .events import SSEEmitter
+from .ratelimit import limiter
 
 
 def _warm_matplotlib_cache() -> None:
@@ -77,7 +78,15 @@ SSE_HEADERS = {
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "model": config.MODEL, "build": "sandbox-linux-fix-1"}
+    return {"status": "ok", "model": config.MODEL, "build": "rate-limit-cache-1"}
+
+
+def _client_ip(request: Request) -> str:
+    # Behind Render's proxy the real client is in X-Forwarded-For (first hop).
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 
 class InvestigateRequest(BaseModel):
@@ -86,7 +95,7 @@ class InvestigateRequest(BaseModel):
 
 
 @app.post("/investigate")
-def investigate(req: InvestigateRequest) -> StreamingResponse:
+def investigate(req: InvestigateRequest, request: Request) -> StreamingResponse:
     """Run the agent loop and stream its decision log as SSE.
 
     This is a *sync* endpoint on purpose: the agent loop makes blocking calls (the
@@ -94,6 +103,11 @@ def investigate(req: InvestigateRequest) -> StreamingResponse:
     operations — and iterates the sync generator below — in a threadpool, so the
     event loop is never blocked. Keeping the loop synchronous keeps it readable.
     """
+    # Throttle before spending any API tokens (429 -> the viewer offers the recording).
+    allowed, reason = limiter.allow(_client_ip(request))
+    if not allowed:
+        raise HTTPException(status_code=429, detail=reason)
+
     run_id = "inv_" + uuid.uuid4().hex[:10]
     try:
         df_path = datasets.resolve(req.dataset_id)
