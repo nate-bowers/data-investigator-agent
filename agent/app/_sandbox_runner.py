@@ -48,6 +48,21 @@ def _set_limits(cpu_s: int, mem_mb: int) -> None:
         resource.setrlimit(resource.RLIMIT_FSIZE, (32 * 1024 * 1024, 32 * 1024 * 1024))
     except (ValueError, OSError):
         pass
+    # Cap total processes for this UID so a snippet can't fork-bomb the box. 256 is
+    # ample for single-threaded pandas/numpy but stops runaway spawning.
+    nproc = getattr(resource, "RLIMIT_NPROC", None)
+    if nproc is not None:
+        try:
+            resource.setrlimit(nproc, (256, 256))
+        except (ValueError, OSError):
+            pass
+    # No core dumps: a segfault shouldn't write a large core file to the cwd.
+    core = getattr(resource, "RLIMIT_CORE", None)
+    if core is not None:
+        try:
+            resource.setrlimit(core, (0, 0))
+        except (ValueError, OSError):
+            pass
 
 
 def _install_network_guard() -> None:

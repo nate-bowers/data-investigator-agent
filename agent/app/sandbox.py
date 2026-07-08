@@ -107,6 +107,14 @@ def _kill_group(proc: subprocess.Popen) -> None:
             pass
 
 
+def _redact(text: Optional[str], df_path: str) -> Optional[str]:
+    """Never leak the absolute dataset path (e.g. /app/uploads/<token>.csv) to the
+    client or the model — replace it with a stable placeholder in error output."""
+    if not text:
+        return text
+    return text.replace(df_path, "<dataset>")
+
+
 def run_pandas(
     code: str,
     df_path: str,
@@ -189,8 +197,8 @@ def run_pandas(
         return SandboxResult(
             ok=False,
             timed_out=cpu_killed,
-            error=f"sandbox exited abnormally (returncode={rc})" + (f": {tail}" if tail else ""),
-            traceback=(stderr[: max_chars * 2] or None),
+            error=_redact(f"sandbox exited abnormally (returncode={rc})" + (f": {tail}" if tail else ""), df_path),
+            traceback=_redact(stderr[: max_chars * 2] or None, df_path),
             duration_ms=dur,
         )
 
@@ -198,8 +206,8 @@ def run_pandas(
         ok=bool(parsed.get("ok")),
         result_repr=parsed.get("result_repr", ""),
         stdout=parsed.get("stdout", ""),
-        error=parsed.get("error"),
-        traceback=parsed.get("traceback"),
+        error=_redact(parsed.get("error"), df_path),
+        traceback=_redact(parsed.get("traceback"), df_path),
         chart_png=parsed.get("chart_png"),
         timed_out=False,
         duration_ms=dur,

@@ -12,17 +12,23 @@ from __future__ import annotations
 
 import io
 import os
+import re
 import time
 import uuid
 
 from . import config
 
 
+_TOKEN_RE = re.compile(r"[a-f0-9]{12}")
+
+
 def _upload_path(token: str) -> str:
-    # Strip anything that isn't token-safe so a crafted dataset_id can't traverse
-    # out of UPLOAD_DIR.
-    safe = "".join(c for c in token if c.isalnum() or c in "-_")
-    return os.path.join(config.UPLOAD_DIR, f"{safe}.csv")
+    # Tokens are server-generated 12-char hex. REJECT anything else outright (never
+    # sanitize-and-continue) so a crafted dataset_id can't be shaped into a path
+    # that escapes UPLOAD_DIR.
+    if not _TOKEN_RE.fullmatch(token):
+        raise ValueError(f"invalid dataset token: {token!r}")
+    return os.path.join(config.UPLOAD_DIR, f"{token}.csv")
 
 
 def resolve(dataset_id: str | None) -> str:

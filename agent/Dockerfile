@@ -18,6 +18,5 @@ RUN MPLCONFIGDIR=/tmp MPLBACKEND=Agg python -c "import matplotlib.pyplot"
 COPY . .
 
 EXPOSE 8000
-# Respect $PORT when the host injects it (Render, etc.); default 8000 locally and
-# on Fly (which routes to internal_port 8000).
+# Respect $PORT when the host injects it (Render sets it); default 8000 locally.
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

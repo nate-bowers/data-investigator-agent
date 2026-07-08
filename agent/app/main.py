@@ -64,8 +64,8 @@ app = FastAPI(title="Data Investigator", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.ALLOWED_ORIGINS,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 # Headers that keep the SSE stream un-buffered end to end.
@@ -141,7 +141,8 @@ def investigate(req: InvestigateRequest, request: Request) -> StreamingResponse:
         try:
             yield from loop.run_investigation(req.question, df_path, emitter)
         except Exception as e:  # surface a terminal failure so the UI never hangs
-            yield emitter.error(-1, f"investigation failed: {e}")
+            print(f"[investigate] run {run_id} failed: {e!r}", file=sys.stderr, flush=True)
+            yield emitter.error(-1, "investigation failed (internal error)")
             yield emitter.done(-1, "error")
 
     return StreamingResponse(gen(), media_type="text/event-stream", headers=SSE_HEADERS)
@@ -154,9 +155,17 @@ async def upload(file: UploadFile = File(...)) -> dict[str, str]:
     The returned dataset_id is passed back to /investigate. The uploaded data is
     untrusted — but it only ever runs inside the sandbox, never here.
     """
-    raw = await file.read()
-    if len(raw) > config.UPLOAD_MAX_BYTES:
-        raise HTTPException(status_code=413, detail="file too large")
+    # Read in bounded chunks and abort as soon as we exceed the cap, so a huge
+    # upload can't be loaded into memory in one shot on a small instance.
+    buf = bytearray()
+    while True:
+        chunk = await file.read(1024 * 1024)
+        if not chunk:
+            break
+        buf += chunk
+        if len(buf) > config.UPLOAD_MAX_BYTES:
+            raise HTTPException(status_code=413, detail="file too large")
+    raw = bytes(buf)
     try:
         dataset_id = datasets.save_upload(raw)
     except Exception as e:  # not a parseable CSV

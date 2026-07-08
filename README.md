@@ -120,9 +120,9 @@ agent/            Python backend
   app/sandbox.py    isolated pandas execution
   app/grounding.py  "no result, no claim"
   data/             the demo dataset + its seeder
-  recordings/       the committed flawless run (demo insurance)
 web/              Next.js viewer
   lib/investigator/         events + reducer + the live/replay hook
   components/investigator/  the context panel, step cards, loop meter, report
+  public/recordings/        the committed flawless run (demo insurance)
 docs/             how-the-loop-works.md
 ```
