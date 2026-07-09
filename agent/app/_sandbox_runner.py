@@ -1,4 +1,4 @@
-"""Sandbox child process — runs one LLM-written pandas snippet, then exits.
+"""Sandbox child process. Runs one LLM-written pandas snippet, then exits.
 
 Lifecycle (all inside this short-lived process):
   1. read a JSON payload from stdin: {code, df_path, chart, max_chars, cpu_s, mem_mb}
@@ -9,7 +9,7 @@ Lifecycle (all inside this short-lived process):
 
 User ``print()`` output is captured into a buffer so it never corrupts the result
 channel (which is real stdout). Keep this file importing only stdlib + pandas +
-(lazily) matplotlib — no FastAPI, no anthropic.
+(lazily) matplotlib, no FastAPI, no anthropic.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ import traceback
 
 
 def _set_limits(cpu_s: int, mem_mb: int) -> None:
-    """Cap the child so a runaway snippet is killed by the kernel, not by luck.
+    """Cap the child so the kernel kills a runaway snippet.
 
     Set BEFORE importing pandas so the caps cover everything the snippet can reach.
     RLIMIT_AS is enforced on Linux and a silent no-op on macOS (documented).
@@ -69,8 +69,8 @@ def _install_network_guard() -> None:
     """Portable floor: make network access raise inside the snippet.
 
     On Linux prod the real boundary is the network namespace (``unshare -n``); this
-    guard is the cross-platform backstop (especially macOS dev). It is NOT a
-    security boundary against hostile code — but the code here is our own LLM's
+    guard is the cross-platform fallback (especially macOS dev). It is not a
+    security boundary against hostile code. The code run here is our own LLM's
     output, not an attacker's.
     """
     import socket
@@ -162,14 +162,14 @@ def main() -> None:
         ns: dict = {"df": df, "pd": pd}
         compiled, captured_last = _compile_capturing_last_expr(code)
         with contextlib.redirect_stdout(stdout_buf):
-            exec(compiled, ns)  # noqa: S102 — executing model-written code is intentional here
+            exec(compiled, ns)  # noqa: S102 (executing model-written code is intentional here)
 
         # Result: an explicit `result` var wins; otherwise the last bare expression.
         value = ns.get("result", ns.get("__lastexpr__") if captured_last else None)
         result["result_repr"] = _bounded(_repr_result(value, max_chars), max_chars)
         result["stdout"] = _bounded(stdout_buf.getvalue(), max_chars)
 
-        # Optional chart — rendered from the result value, not the raw df.
+        # Optional chart, rendered from the result value, not the raw df.
         if chart_spec:
             try:
                 from charts import render_chart  # sibling module (agent/app on sys.path)

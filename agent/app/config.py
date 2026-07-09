@@ -1,4 +1,4 @@
-"""Central runtime configuration — every knob reads from the environment.
+"""Central runtime configuration. Every setting reads from the environment.
 
 Kept dependency-free (plain ``os.getenv``) on purpose: this module is imported by
 the sandbox child process, which must not drag in FastAPI or the Anthropic SDK.
@@ -57,6 +57,10 @@ UPLOAD_TTL_S = _int("UPLOAD_TTL_S", 3600)
 # --- Rate limiting (the public /investigate endpoint calls a paid API) --------
 RATE_LIMIT_PER_IP_HOUR = _int("RATE_LIMIT_PER_IP_HOUR", 6)
 RATE_LIMIT_GLOBAL_DAY = _int("RATE_LIMIT_GLOBAL_DAY", 150)
+# Cheap read/parse endpoints (/context, /upload) get a separate, generous bucket so
+# ordinary page loads never consume the paid /investigate budget above.
+RATE_LIMIT_CHEAP_PER_IP_HOUR = _int("RATE_LIMIT_CHEAP_PER_IP_HOUR", 120)
+RATE_LIMIT_CHEAP_GLOBAL_DAY = _int("RATE_LIMIT_CHEAP_GLOBAL_DAY", 5000)
 
 # --- CORS ---------------------------------------------------------------------
 # Comma-separated. Includes localhost for dev; add the Vercel prod URL in prod.

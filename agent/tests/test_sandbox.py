@@ -35,7 +35,7 @@ def test_clean_success(df_path):
 
 
 def test_last_expression_is_the_result(df_path):
-    # No explicit `result =` — the trailing expression becomes the result.
+    # No explicit `result =`, so the trailing expression becomes the result.
     r = run_pandas("df.groupby('g')['v'].sum()", df_path)
     assert r.ok
     assert "Series" in r.result_repr

@@ -18,13 +18,14 @@ node_modules/
 .next/
 out/
 .vercel/
+*.tsbuildinfo
 
-# Uploads — untrusted user CSVs, never committed
+# Uploads: untrusted user CSVs, never committed
 agent/uploads/*
 !agent/uploads/.gitkeep
 
 # OS
 .DS_Store
 
-# Personal study notes — kept on disk, out of the public repo
+# Personal study notes: kept on disk, out of the public repo
 docs/quiz.md

@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from . import config, datasets, loop, tools
 from .events import SSEEmitter
 from .loop import ModelUnavailable
-from .ratelimit import limiter
+from .ratelimit import cheap_limiter, limiter
 
 
 def _warm_matplotlib_cache() -> None:
@@ -34,7 +34,7 @@ def _warm_matplotlib_cache() -> None:
     The sandbox child renders charts under MPLCONFIGDIR=/tmp; matplotlib's first
     run there builds a font cache that is slow enough to collide with the sandbox
     CPU cap. Warming it at startup means the first real chart render is fast.
-    Best-effort and detached — never blocks startup.
+    Best-effort and detached: never blocks startup.
     """
     env = {
         "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
@@ -55,7 +55,7 @@ def _warm_matplotlib_cache() -> None:
 
 async def _upload_sweeper() -> None:
     """Sweep expired uploads at startup and every ~600s thereafter, so user CSVs
-    don't accumulate on the box between /upload calls. Best-effort — a failure in
+    don't accumulate on the box between /upload calls. Best-effort: a failure in
     one pass never crashes the loop."""
     while True:
         try:
@@ -115,7 +115,7 @@ def context(request: Request, dataset_id: str | None = None) -> dict:
     """Return what goes into the agent: the tools it can call + the dataset schema.
     Powers the viewer's context panel so the agent's capabilities and the data are
     visible before it runs (and after a CSV upload)."""
-    allowed, reason = limiter.allow(_client_ip(request))
+    allowed, reason = cheap_limiter.allow(_client_ip(request))
     if not allowed:
         raise HTTPException(status_code=429, detail=reason)
     try:
@@ -141,7 +141,7 @@ def investigate(req: InvestigateRequest, request: Request) -> StreamingResponse:
 
     This is a *sync* endpoint on purpose: the agent loop makes blocking calls (the
     Anthropic SDK + the pandas sandbox subprocess), and Starlette runs sync path
-    operations — and iterates the sync generator below — in a threadpool, so the
+    operations (and iterates the sync generator below) in a threadpool, so the
     event loop is never blocked.
     """
     # Throttle before spending any API tokens.
@@ -177,9 +177,9 @@ async def upload(request: Request, file: UploadFile = File(...)) -> dict[str, st
     """Accept a user CSV, validate it, persist it, return its dataset_id.
 
     The returned dataset_id is passed back to /investigate. The uploaded data is
-    untrusted — but it only ever runs inside the sandbox, never here.
+    untrusted, but it only ever runs inside the sandbox, never here.
     """
-    allowed, reason = limiter.allow(_client_ip(request))
+    allowed, reason = cheap_limiter.allow(_client_ip(request))
     if not allowed:
         raise HTTPException(status_code=429, detail=reason)
     # Read in bounded chunks and abort as soon as we exceed the cap, so a huge

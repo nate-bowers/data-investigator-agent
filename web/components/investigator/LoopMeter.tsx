@@ -11,7 +11,7 @@ export function LoopMeter({ state }: { state: ViewState }) {
   const status =
     state.status === "done"
       ? state.stoppedReason === "finish"
-        ? "self-stopped — answered"
+        ? "self-stopped: answered"
         : `stopped: ${state.stoppedReason}`
       : state.status === "error"
         ? "connection error"

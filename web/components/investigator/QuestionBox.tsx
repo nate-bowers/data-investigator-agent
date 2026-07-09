@@ -75,7 +75,7 @@ export function QuestionBox({ running, backend, datasetId, onDatasetChange, onRu
 
       <div className="qb-meta">
         <span className="qb-dataset">
-          Dataset: <b>{datasetId ? uploadName : "demo — signups.csv"}</b>
+          Dataset: <b>{datasetId ? uploadName : "demo (signups.csv)"}</b>
         </span>
         <button className="linklike" onClick={() => fileRef.current?.click()} disabled={running}>
           upload a CSV
@@ -100,7 +100,7 @@ export function QuestionBox({ running, backend, datasetId, onDatasetChange, onRu
       </div>
 
       <p className="qb-note">
-        Uploaded CSVs run in an isolated sandbox and are auto-deleted within ~1 hour — don&apos;t upload sensitive data.
+        Uploaded CSVs run in an isolated sandbox and are auto-deleted within ~1 hour. Don&apos;t upload sensitive data.
       </p>
 
       {uploadErr && <div className="qb-err">Upload failed: {uploadErr}</div>}

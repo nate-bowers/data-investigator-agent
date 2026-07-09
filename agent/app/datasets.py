@@ -3,10 +3,10 @@
   * ``"demo:signups"`` (or ``None``) -> the bundled demo dataset.
   * ``"upload:<token>"``             -> a user-uploaded CSV in ``UPLOAD_DIR``.
 
-Uploaded CSVs are *untrusted* user input. Validation (size + parseability) happens
-at upload time; the isolation that makes running LLM-written pandas over an arbitrary
-uploaded CSV safe comes from the sandbox. The dataset is always passed to the sandbox
-by PATH — never as inline data.
+Uploaded CSVs are untrusted user input. Validation (size and parseability) happens
+at upload time. Running LLM-written pandas over an arbitrary uploaded CSV is kept
+safe by the sandbox. The dataset is always passed to the sandbox by path, never as
+inline data.
 """
 from __future__ import annotations
 

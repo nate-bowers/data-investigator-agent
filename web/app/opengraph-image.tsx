@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-// Social card generated at build/request time — system fonts only, no network
+// Social card generated at build/request time. System fonts only, no network
 // fetches. Brand palette: paper, ink, teal accent, amber.
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -61,7 +61,7 @@ export default async function Image() {
 
         <div style={{ display: "flex", alignItems: "center", fontSize: 24, color: "#8f897c" }}>
           <div style={{ display: "flex", width: 14, height: 14, borderRadius: 7, background: "#0d7a8a", marginRight: 14 }} />
-          writes and runs its own pandas · reads each result · self-corrects · stops when it has the answer
+          writes and runs pandas · reads each result · corrects its own errors · stops when it has the answer
         </div>
       </div>
     ),

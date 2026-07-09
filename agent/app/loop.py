@@ -1,13 +1,15 @@
-"""The agent loop: a hand-written tool-use loop over the Anthropic Messages API.
+"""The agent loop: a tool-use loop over the Anthropic Messages API.
 
-This is a while loop, not a fixed sequence. Each turn we ask the model what to do
-next; it emits a tool call; we run the tool; we feed the result back; it decides its
-next move from what it saw. The investigation path is not hardcoded.
+This is a while loop. Each turn we ask the model what to do next; it emits a tool
+call; we run the tool; we feed the result back; it decides its next move from what it
+saw. The investigation path is determined per run by the model rather than fixed in
+this code.
 
 The loop is a generator: it ``yield``s decision-log events (SSE frames) as they
-happen, so the browser can watch the agent in real time. FastAPI iterates this sync
-generator in a threadpool, so the blocking Anthropic + sandbox calls don't stall the
-server. The stream of events is the decision log — there is no separate logging pass.
+happen, so the browser can display the agent's progress in real time. FastAPI iterates
+this sync generator in a threadpool, so the blocking Anthropic + sandbox calls don't
+stall the server. The stream of events is the decision log; there is no separate
+logging pass.
 
 Mechanics to note:
   * The handshake: append the assistant turn (which contains the `tool_use` block)
@@ -17,8 +19,8 @@ Mechanics to note:
     Our code only executes whatever tool the model asked for.
   * Self-correction: a sandbox error comes back as a `tool_result` with
     `is_error=True`; the model reads the traceback next turn and rewrites.
-  * Termination: the model calls `finish`. The loop cap is a separate safety net,
-    not the thing that decides "done".
+  * Termination: the model calls `finish`. The loop cap is a separate safety net;
+    it does not decide when the investigation is done.
 """
 from __future__ import annotations
 
@@ -48,8 +50,8 @@ def run_investigation(
         # overload/timeout, so we don't add our own retry loop.
         client = anthropic.Anthropic(timeout=60.0, max_retries=3)  # reads ANTHROPIC_API_KEY from the environment
 
-    # The conversation. The system prompt sets the posture; the first user turn is
-    # the task. Everything after this is built by the loop, turn by turn.
+    # The conversation. The system prompt sets the instructions; the first user turn
+    # is the task. Everything after this is built by the loop, turn by turn.
     messages: list[dict] = [
         {
             "role": "user",
@@ -68,9 +70,9 @@ def run_investigation(
     yield emitter.run_start(question, config.MODEL)
 
     while True:
-        # -- Hard guards. Checked before every model call so the agent can neither
-        #    spiral nor overspend. These are safety nets, not control flow: they
-        #    never pick a tool or a phase.
+        # -- Hard guards. Checked before every model call to bound the number of
+        #    steps and the token spend. These are limits, not control flow: they do
+        #    not pick a tool or a phase.
         if step >= config.MAX_STEPS:
             yield emitter.cap_hit(step, "max_steps")
             yield from _forced_finish(client, messages, results_by_step, emitter, step, "max_steps")
@@ -156,8 +158,8 @@ def run_investigation(
 
 def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, tool_results, emitter):
     """Run one run_pandas call: emit its events, append its tool_result, and return
-    the updated ``consecutive_errors`` count. A generator — ``yield from`` it and
-    capture the return value.
+    the updated ``consecutive_errors`` count. This is a generator: ``yield from`` it
+    and capture the return value.
 
     An error is handed back to the model verbatim as ``is_error=True`` so it can
     self-correct, but a lead that keeps failing is abandoned after a per-step cap so
@@ -188,7 +190,7 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
     yield emitter.error(step, traceback_text, attempt=consecutive_errors - 1)
 
     if consecutive_errors >= config.MAX_RETRIES_PER_STEP:
-        # Abandon this lead — but still hand the traceback back so the model can pivot.
+        # Abandon this lead, but still hand the traceback back so the model can pivot.
         yield emitter.retry_exhausted(step)
         tool_results.append(
             _tool_result(
@@ -211,8 +213,8 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
 
 def _forced_finish(client, messages, results_by_step, emitter, step, reason):
     """Loop-cap safety net: ask the model to write a grounded report from only what
-    it already has. Not an open-ended continuation — this fires when a guard trips,
-    not when the agent decides it's done.
+    it already has. This fires when a guard trips, not when the agent decides it's
+    done.
     """
     messages.append(
         {
@@ -282,7 +284,7 @@ def _apply_prompt_cache(messages) -> None:
 
     Each loop turn appends more history, so the breakpoint moves forward; we clear
     the old one first to stay within the 4-breakpoint limit. We only mark
-    list-content turns (our tool_result turns) — a plain-string user turn is skipped
+    list-content turns (our tool_result turns); a plain-string user turn is skipped
     (and there's no meaningful prefix to cache that early anyway).
     """
     for m in messages:
@@ -331,7 +333,7 @@ def _tool_result(tool_use_id, content, *, is_error) -> dict:
 
 def _labeled(step: int, content: str) -> str:
     # Prefix each tool result with its step number so the model can cite it as
-    # `evidence_step` in finish() — it cannot see our internal step indices otherwise.
+    # `evidence_step` in finish(); it cannot see our internal step indices otherwise.
     return f"[step {step}]\n{content}"
 
 

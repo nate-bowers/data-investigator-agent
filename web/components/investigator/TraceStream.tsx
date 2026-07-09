@@ -11,7 +11,7 @@ export function TraceStream({ state }: { state: ViewState }) {
       {state.steps.map((s) => (
         <StepCard key={s.step} step={s} />
       ))}
-      {state.capHit && <div className="cap-note">Hit its budget ({state.capHit}) — wrapping up from what it had.</div>}
+      {state.capHit && <div className="cap-note">Reached the budget limit ({state.capHit}). Finishing with the results collected so far.</div>}
     </div>
   );
 }

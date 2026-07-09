@@ -38,7 +38,7 @@ export function useAgentContext(datasetId?: string): AgentContext {
         if (live && d) setCtx(d as AgentContext);
       })
       .catch(() => {
-        /* cold backend — fall back below */
+        /* cold backend: fall back below */
       });
     return () => {
       live = false;

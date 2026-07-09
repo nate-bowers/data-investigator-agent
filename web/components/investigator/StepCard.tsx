@@ -24,7 +24,7 @@ export function StepCard({ step }: { step: StepState }) {
           <span className="phase-tag">{isOrient ? "orient" : `step ${step.step}`}</span>
           {errored && <span className="badge badge-error">query failed</span>}
           {step.retry && <span className="badge badge-recover">self-correcting →</span>}
-          {step.retryExhausted && <span className="badge badge-error">gave up — pivoting</span>}
+          {step.retryExhausted && <span className="badge badge-error">gave up, pivoting</span>}
         </div>
 
         {step.thinking && <p className="thinking">{step.thinking}</p>}
@@ -61,7 +61,7 @@ export function StepCard({ step }: { step: StepState }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`data:image/png;base64,${step.chart.png}`} alt={step.chart.reason} />
             <figcaption>
-              Chose <b>{step.chart.kind}</b> — {step.chart.reason}
+              Chose <b>{step.chart.kind}</b>: {step.chart.reason}
             </figcaption>
           </figure>
         )}

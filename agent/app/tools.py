@@ -25,7 +25,7 @@ RUN_PANDAS = {
         "Run a short pandas snippet to test ONE hypothesis about the question. The "
         "dataset is preloaded as a DataFrame named `df`. Put your answer in a variable "
         "named `result` (or end with a bare expression, or print()). State does NOT "
-        "persist between calls — each snippet is independent, so recompute what you "
+        "persist between calls: each snippet is independent, so recompute what you "
         "need. If the snippet errors you get the full traceback back: read it and fix "
         "your code. Optionally attach a chart to visualize THIS result when a picture "
         "communicates the finding better than a number."
@@ -67,7 +67,7 @@ RUN_PANDAS = {
 FINISH = {
     "name": "finish",
     "description": (
-        "Call this when you have actually answered the question — not before. Give a "
+        "Call this when you have actually answered the question, not before. Give a "
         "clear written answer plus a list of findings, each tied to the step whose "
         "result supports it. Every claim must reference a real result you computed; if "
         "you cannot ground it, do not claim it."

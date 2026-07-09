@@ -30,7 +30,7 @@ export default function InvestigatorPage() {
   }, []);
 
   // Warm the free-tier backend as soon as the page mounts so a cold start is
-  // already melting by the time someone hits Investigate. Fire-and-forget.
+  // already underway by the time someone hits Investigate. Fire-and-forget.
   useEffect(() => {
     warm();
   }, [warm]);
@@ -58,9 +58,9 @@ export default function InvestigatorPage() {
       <header className="hero">
         <h1>Data Investigator</h1>
         <p className="tagline">
-          Watch an agent investigate a dataset — it writes and runs its own pandas, reads each result to decide the next
+          An agent investigates a dataset. It writes and runs its own pandas, reads each result to decide the next
           move, fixes its own broken code, and stops when it has the answer.{" "}
-          <b>The path isn&apos;t hardcoded — the data drives it.</b>
+          <b>The path is decided at runtime from the data, not fixed in advance.</b>
         </p>
       </header>
 
@@ -91,7 +91,7 @@ export default function InvestigatorPage() {
             recording &&
             (state.errorKind === "rate_limit" ? (
               <div className="cold-note" role="status" aria-live="polite">
-                Rate limit reached — try again later, or play the recorded run.{" "}
+                Rate limit reached. Try again later, or play the recorded run.{" "}
                 <button className="linklike" onClick={onReplay}>
                   <span aria-hidden="true">▶ </span>play the recorded run
                 </button>
@@ -111,11 +111,11 @@ export default function InvestigatorPage() {
 
           {state.status === "idle" && (
             <p className="empty-hint">
-              Hit <b>Investigate</b> to watch it work, or{" "}
+              Hit <b>Investigate</b> to run it, or{" "}
               <button className="linklike" onClick={onReplay} disabled={!recording}>
                 play the recorded run
               </button>
-              . The agent&apos;s tools and the data it sees are on the left — the trace of its tool calls appears here.
+              . The agent&apos;s tools and the data it sees are on the left. The trace of its tool calls appears here.
             </p>
           )}
         </div>

@@ -8,17 +8,17 @@ Public API::
 The agent writes its own pandas and we execute it, so this is the main risk
 surface.
 
-Isolation (subprocess-based; a container is the documented upgrade path — swap the
+Isolation (subprocess-based; a container is the documented upgrade path: swap the
 spawn internals behind this same signature):
   * the snippet runs in a child process, so a crash/hang/OOM can't take down the
     FastAPI server;
-  * resource limits are applied by the child on itself at startup (thread-safe —
+  * resource limits are applied by the child on itself at startup (thread-safe,
     no ``preexec_fn``): RLIMIT_CPU (portable, SIGXCPU), RLIMIT_AS (Linux-enforced;
     a no-op on macOS), RLIMIT_FSIZE;
   * a wall-clock timeout in the parent -> ``killpg`` the whole process group;
   * network denied two ways: ``unshare -n`` on Linux (kernel-level) + an in-child
     socket guard everywhere (the portable floor);
-  * scrubbed minimal env, ``close_fds=True``, and the dataset passed by PATH — the
+  * scrubbed minimal env, ``close_fds=True``, and the dataset passed by PATH, so the
     data itself never crosses this boundary.
 
 ``SandboxResult`` is a plain dataclass whose fields are the contract the agent
@@ -87,7 +87,7 @@ def _scrubbed_env() -> dict[str, str]:
         "MPLCONFIGDIR": "/tmp",
         "PYTHONDONTWRITEBYTECODE": "1",
         # Single-threaded BLAS + capped malloc arenas. Our data is tiny, so this
-        # costs nothing — and it drastically shrinks numpy's VIRTUAL address-space
+        # costs nothing, and it shrinks numpy's VIRTUAL address-space
         # reservation, which otherwise trips RLIMIT_AS on Linux.
         "OPENBLAS_NUM_THREADS": "1",
         "OMP_NUM_THREADS": "1",
@@ -109,7 +109,7 @@ def _kill_group(proc: subprocess.Popen) -> None:
 
 def _redact(text: Optional[str], df_path: str) -> Optional[str]:
     """Never leak the absolute dataset path (e.g. /app/uploads/<token>.csv) to the
-    client or the model — replace it with a stable placeholder in error output."""
+    client or the model: replace it with a stable placeholder in error output."""
     if not text:
         return text
     return text.replace(df_path, "<dataset>")

@@ -1,17 +1,17 @@
-"""Generate the sample dataset with a planted, non-obvious story.
+"""Generate the sample dataset.
 
 Deterministic (fixed seed) so runs are reproducible.
 
-The story to uncover from "why did signups drop in March?":
+The pattern behind "why did signups drop in March?":
   * total signups dip in March;
-  * the dip is not uniform — only the `social` channel collapses in March
+  * the dip is not uniform. Only the `social` channel collapses in March
     (organic / paid_search / referral stay flat);
   * social's collapse coincides with campaign_id going null for social rows in
-    March — a paused campaign, not lost demand;
+    March (a paused campaign, not lost demand);
   * social recovers in April.
 
 Red herring: `activated` is stored as the strings "yes"/"no" (as messy CSVs often
-are — and unlike "true"/"false", pandas does not coerce these to bool), so a naive
+are, and unlike "true"/"false", pandas does not coerce these to bool), so a naive
 activation-rate query (`.mean()`) throws a TypeError. `signup_date` is a plain
 string AND a few rows hold the unparseable value "unknown", so a first
 `pd.to_datetime(...)` raises until it adds errors='coerce'.

@@ -1,7 +1,7 @@
 """A tiny in-memory rate limiter for the public /investigate endpoint.
 
 That endpoint calls a paid API, so an unthrottled public URL is a real cost risk
-(CORS only stops *browsers* from other origins — anyone can curl the backend). This
+(CORS only stops *browsers* from other origins; anyone can curl the backend). This
 caps runs per IP per hour AND total runs per day (a global backstop), so neither a
 single visitor nor the whole internet can run up the bill.
 
@@ -35,7 +35,7 @@ class RateLimiter:
             while g and g[0] < day_ago:
                 g.popleft()
             if len(g) >= self.global_day:
-                return False, "The demo has hit its daily limit — try the recorded run."
+                return False, "The demo has hit its daily limit. Try the recorded run."
 
             # Per-IP hourly limit.
             hour_ago = now - 3600
@@ -43,7 +43,7 @@ class RateLimiter:
             while dq and dq[0] < hour_ago:
                 dq.popleft()
             if len(dq) >= self.per_ip_hour:
-                return False, "You've hit the hourly limit — try the recorded run."
+                return False, "You've hit the hourly limit. Try the recorded run."
 
             dq.append(now)
             g.append(now)
@@ -55,3 +55,7 @@ class RateLimiter:
 
 
 limiter = RateLimiter(config.RATE_LIMIT_PER_IP_HOUR, config.RATE_LIMIT_GLOBAL_DAY)
+
+# Separate, generous bucket for cheap read/parse endpoints (/context, /upload) so
+# normal page loads never spend the paid /investigate budget.
+cheap_limiter = RateLimiter(config.RATE_LIMIT_CHEAP_PER_IP_HOUR, config.RATE_LIMIT_CHEAP_GLOBAL_DAY)

@@ -1,4 +1,4 @@
-// Mirrors agent/app/events.py — the SSE event contract. Keep the two in sync.
+// Mirrors agent/app/events.py, the SSE event contract. Keep the two in sync.
 
 export type Phase = "orient" | "query";
 

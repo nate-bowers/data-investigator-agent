@@ -1,5 +1,5 @@
-"""The SSE event contract — the single source of truth for the *decision log*
-that the agent loop emits and the viewer renders.
+"""The SSE event contract. Defines the decision-log events that the agent loop
+emits and the viewer renders.
 
 ``web/lib/investigator/events.ts`` mirrors this file. If you change an event
 here, change it there.

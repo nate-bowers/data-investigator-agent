@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import type { ViewState } from "@/lib/investigator/reducer";
 
-// Minimal inline markdown for the model's answer (**bold**, `code`) — no dep.
+// Minimal inline markdown for the model's answer (**bold**, `code`), no dep.
 function inline(text: string): ReactNode[] {
   const nodes: ReactNode[] = [];
   const re = /(\*\*[^*]+\*\*|`[^`]+`)/g;
@@ -20,7 +20,7 @@ function inline(text: string): ReactNode[] {
   return nodes;
 }
 
-// The grounded final report: the answer, then each claim linked to the step whose
+// The final report: the answer, then each claim linked to the step whose
 // result supports it (✓ grounded / ⚠ ungrounded).
 export function FinalReport({ state }: { state: ViewState }) {
   if (!state.report) return null;

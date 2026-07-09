@@ -126,8 +126,8 @@ export function reduce(state: ViewState, action: Action): ViewState {
   }
 }
 
-// Derived: how many steps errored (and the run continued past them) — the
-// "self-corrected" count the LoopMeter shows.
+// Derived: how many steps errored (and the run continued past them). This is
+// the "self-corrected" count the LoopMeter shows.
 export function recoveredCount(state: ViewState): number {
   return state.steps.filter((s) => s.error).length;
 }

@@ -8,7 +8,7 @@ import { initialState, reduce } from "./reducer";
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
 
 // If the first SSE byte hasn't arrived by this point, the free backend is almost
-// certainly cold-starting — surface the "waking" banner (without aborting the request).
+// certainly cold-starting, so surface the "waking" banner (without aborting the request).
 const FIRST_BYTE_WATCHDOG_MS = 4500;
 
 /**
@@ -55,7 +55,7 @@ export function useInvestigation() {
       abortRef.current = ctrl;
       dispatch({ type: "__start__", source: "live", question });
       // First-byte watchdog: if nothing streams within the window, the free backend
-      // is likely waking up — flag it so the page can offer the recorded run.
+      // is likely waking up, so flag it so the page can offer the recorded run.
       // We deliberately do NOT abort the real request for slowness.
       setWaking(false);
       watchdogRef.current = setTimeout(() => setWaking(true), FIRST_BYTE_WATCHDOG_MS);
@@ -74,10 +74,10 @@ export function useInvestigation() {
             const j = (await res.json()) as { detail?: string };
             if (j?.detail) msg = j.detail;
           } catch {
-            /* non-JSON error body — keep the status message */
+            /* non-JSON error body, keep the status message */
           }
-          // A 429 is a live backend enforcing a limit — a distinct, friendly case,
-          // not the "couldn't reach the backend" transport framing.
+          // A 429 means the backend is reachable and enforcing a rate limit, so
+          // report it as a rate_limit case rather than a transport failure.
           dispatch({
             type: "__error__",
             message: msg,
@@ -93,7 +93,7 @@ export function useInvestigation() {
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
-          // First bytes are streaming — the backend is awake; drop the "waking" flag.
+          // First bytes are streaming, so the backend is awake; drop the "waking" flag.
           clearWatchdog();
           buf += decoder.decode(value, { stream: true });
           let idx: number;
@@ -107,7 +107,7 @@ export function useInvestigation() {
       } catch (e) {
         const err = e as { name?: string; message?: string };
         if (err?.name !== "AbortError") {
-          // A thrown error here is a real network/connection failure — transport kind.
+          // A thrown error here is a real network/connection failure, so use the transport kind.
           dispatch({ type: "__error__", message: String(err?.message ?? e), kind: "transport" });
         }
       } finally {

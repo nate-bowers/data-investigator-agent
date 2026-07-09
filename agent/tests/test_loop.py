@@ -55,7 +55,7 @@ class FakeClient:
         self.messages = self  # so client.messages.create(...) resolves here
 
     def create(self, **kwargs):
-        # Snapshot the messages list — the loop mutates it in place, so we must
+        # Snapshot the messages list. The loop mutates it in place, so we must
         # capture the sequence at call time, not a live reference to the final state.
         rec = dict(kwargs)
         rec["messages"] = list(kwargs.get("messages", []))

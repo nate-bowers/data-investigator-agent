@@ -1,6 +1,6 @@
-/* Data Investigator viewer — a lab-notebook / instrument aesthetic, deliberately
-   NOT a chat UI. Warm paper, ink text, a monospace voice for everything the agent
-   computed, and one teal accent for its decisions + one amber for self-correction. */
+/* Data Investigator viewer. Lab-notebook / instrument styling: warm paper
+   background, ink text, monospace for computed output, a teal accent for
+   agent decisions and an amber accent for self-correction. */
 
 .investigator {
   --paper: #f4f2ec;
@@ -511,7 +511,7 @@
   }
 }
 
-/* --- context panel (the agent's tools + the data it sees) ------------------- */
+/* --- context panel (agent tools + dataset columns) ------------------------- */
 .context-panel {
   position: sticky;
   top: 16px;

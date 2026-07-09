@@ -1,4 +1,4 @@
-"""Rate limiter — per-IP hourly cap and a global daily backstop."""
+"""Rate limiter: per-IP hourly cap and a global daily backstop."""
 from __future__ import annotations
 
 from app.ratelimit import RateLimiter
