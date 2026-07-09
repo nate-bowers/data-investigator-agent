@@ -29,3 +29,6 @@ agent/uploads/*
 
 # Personal study notes: kept on disk, out of the public repo
 docs/quiz.md
+
+# Eval output (regenerated each run)
+agent/evals/results.json
