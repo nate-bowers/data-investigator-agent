@@ -1,5 +1,7 @@
 # Data Investigator
 
+![CI](https://github.com/nate-bowers/data-investigator-agent/actions/workflows/ci.yml/badge.svg)
+
 **An autonomous data-analysis agent that investigates a dataset the way a person would — one question at a time, deciding each step from what the last one revealed.**
 
 🔗 **Live demo → https://web-mu-three-lu56la822j.vercel.app/investigator**

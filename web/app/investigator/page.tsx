@@ -16,7 +16,7 @@ import "./investigator.css";
 const RECORDING_URL = "/recordings/signups-march-dip.json";
 
 export default function InvestigatorPage() {
-  const { state, startLive, replay, stop, backend } = useInvestigation();
+  const { state, startLive, replay, stop, warm, waking, backend } = useInvestigation();
   const [datasetId, setDatasetId] = useState<string | undefined>(undefined);
   const ctx = useAgentContext(datasetId);
   const [recording, setRecording] = useState<InvestigationEvent[] | null>(null);
@@ -28,6 +28,12 @@ export default function InvestigatorPage() {
       .then(setRecording)
       .catch(() => setRecording(null));
   }, []);
+
+  // Warm the free-tier backend as soon as the page mounts so a cold start is
+  // already melting by the time someone hits Investigate. Fire-and-forget.
+  useEffect(() => {
+    warm();
+  }, [warm]);
 
   const running = state.status === "running";
 
@@ -72,14 +78,32 @@ export default function InvestigatorPage() {
             onReplay={onReplay}
           />
 
-          {offerRecorded && recording && (
-            <div className="cold-note">
-              Couldn&apos;t reach the backend{state.errorMessage ? ` (${state.errorMessage})` : ""}.{" "}
+          {waking && recording && (
+            <div className="cold-note" role="status" aria-live="polite">
+              Waking the free backend (~30s)… or play the recorded run now.{" "}
               <button className="linklike" onClick={onReplay}>
-                ▶ play the recorded run instead
+                <span aria-hidden="true">▶ </span>play the recorded run
               </button>
             </div>
           )}
+
+          {offerRecorded &&
+            recording &&
+            (state.errorKind === "rate_limit" ? (
+              <div className="cold-note" role="status" aria-live="polite">
+                Rate limit reached — try again later, or play the recorded run.{" "}
+                <button className="linklike" onClick={onReplay}>
+                  <span aria-hidden="true">▶ </span>play the recorded run
+                </button>
+              </div>
+            ) : (
+              <div className="cold-note" role="status" aria-live="polite">
+                Couldn&apos;t reach the backend{state.errorMessage ? ` (${state.errorMessage})` : ""}.{" "}
+                <button className="linklike" onClick={onReplay}>
+                  <span aria-hidden="true">▶ </span>play the recorded run instead
+                </button>
+              </div>
+            ))}
 
           <LoopMeter state={state} />
           <TraceStream state={state} />

@@ -1,0 +1,10 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Data Investigator">
+  <rect width="32" height="32" rx="7" fill="#f4f2ec" />
+  <!-- data trace / pulse behind the lens -->
+  <path d="M4 19 L9 19 L11.5 12 L14 24 L16.5 16 L18.5 19 L22 19"
+        fill="none" stroke="#0d7a8a" stroke-width="1.6"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.45" />
+  <!-- magnifying glass -->
+  <circle cx="14.5" cy="15.5" r="7" fill="none" stroke="#0d7a8a" stroke-width="2.4" />
+  <line x1="19.6" y1="20.6" x2="26" y2="27" stroke="#0d7a8a" stroke-width="2.8" stroke-linecap="round" />
+</svg>

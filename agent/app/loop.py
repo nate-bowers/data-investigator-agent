@@ -25,9 +25,15 @@ from __future__ import annotations
 import os
 from typing import Any, Iterator, Optional
 
+import anthropic
+
 from . import config, grounding, profile, prompts, tools
 from .events import SSEEmitter
 from .sandbox import run_pandas
+
+
+class ModelUnavailable(RuntimeError):
+    pass
 
 
 def run_investigation(
@@ -38,9 +44,9 @@ def run_investigation(
 ) -> Iterator[str]:
     """Investigate ``question`` over the dataset at ``df_path``; yield SSE frames."""
     if client is None:
-        import anthropic
-
-        client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
+        # timeout + max_retries: the SDK does exponential backoff on 429/500/503/
+        # overload/timeout, so we don't add our own retry loop.
+        client = anthropic.Anthropic(timeout=60.0, max_retries=3)  # reads ANTHROPIC_API_KEY from the environment
 
     # The conversation. The system prompt sets the posture; the first user turn is
     # the task. Everything after this is built by the loop, turn by turn.
@@ -246,7 +252,17 @@ def _model_call(client, messages, *, tool_choice, thinking_on):
     )
     if thinking_on:
         kwargs["thinking"] = {"type": "adaptive"}
-    resp = client.messages.create(**kwargs)
+    try:
+        resp = client.messages.create(**kwargs)
+    except (
+        anthropic.APIStatusError,
+        anthropic.APIConnectionError,
+        anthropic.APITimeoutError,
+        anthropic.RateLimitError,
+    ) as e:
+        raise ModelUnavailable(
+            "The model is temporarily unavailable (rate limited or overloaded). Please try again in a moment."
+        ) from e
     if os.getenv("DEBUG_USAGE") and getattr(resp, "usage", None):
         u = resp.usage
         print(
@@ -284,7 +300,12 @@ def _tokens(resp) -> int:
     u = getattr(resp, "usage", None)
     if not u:
         return 0
-    return (getattr(u, "input_tokens", 0) or 0) + (getattr(u, "output_tokens", 0) or 0)
+    return (
+        (getattr(u, "input_tokens", 0) or 0)
+        + (getattr(u, "output_tokens", 0) or 0)
+        + (getattr(u, "cache_read_input_tokens", 0) or 0)
+        + (getattr(u, "cache_creation_input_tokens", 0) or 0)
+    )
 
 
 def _first_tool(resp, name):

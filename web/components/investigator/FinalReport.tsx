@@ -34,7 +34,10 @@ export function FinalReport({ state }: { state: ViewState }) {
         <ul className="findings">
           {findings.map((f, i) => (
             <li key={i} className={f.grounded ? "grounded" : "ungrounded"}>
-              <span className="finding-mark">{f.grounded ? "✓" : "⚠"}</span>
+              <span className="finding-mark" aria-hidden="true">
+                {f.grounded ? "✓" : "⚠"}
+              </span>
+              <span className="visually-hidden">{f.grounded ? "Grounded: " : "Ungrounded: "}</span>
               <span className="finding-claim">{f.claim}</span>
               <span className="finding-step">step {f.evidence_step}</span>
             </li>

@@ -25,3 +25,6 @@ agent/uploads/*
 
 # OS
 .DS_Store
+
+# Personal study notes — kept on disk, out of the public repo
+docs/quiz.md

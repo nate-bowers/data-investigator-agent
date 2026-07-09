@@ -7,7 +7,7 @@ import { StepCard } from "./StepCard";
 export function TraceStream({ state }: { state: ViewState }) {
   if (state.steps.length === 0) return null;
   return (
-    <div className="trace-stream">
+    <div className="trace-stream" role="status" aria-live="polite">
       {state.steps.map((s) => (
         <StepCard key={s.step} step={s} />
       ))}

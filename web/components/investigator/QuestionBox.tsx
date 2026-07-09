@@ -94,10 +94,14 @@ export function QuestionBox({ running, backend, datasetId, onDatasetChange, onRu
         )}
         <span className="qb-spacer" />
         <button className="linklike" onClick={onReplay} disabled={running}>
-          ▶ play recorded run
+          <span aria-hidden="true">▶ </span>play recorded run
         </button>
         <input ref={fileRef} type="file" accept=".csv,text/csv" hidden onChange={onFile} />
       </div>
+
+      <p className="qb-note">
+        Uploaded CSVs run in an isolated sandbox and are auto-deleted within ~1 hour — don&apos;t upload sensitive data.
+      </p>
 
       {uploadErr && <div className="qb-err">Upload failed: {uploadErr}</div>}
     </div>

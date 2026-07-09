@@ -1,11 +1,15 @@
 "use client";
 
-import { useCallback, useReducer, useRef } from "react";
+import { useCallback, useReducer, useRef, useState } from "react";
 
 import type { InvestigationEvent } from "./events";
 import { initialState, reduce } from "./reducer";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+
+// If the first SSE byte hasn't arrived by this point, the free backend is almost
+// certainly cold-starting — surface the "waking" banner (without aborting the request).
+const FIRST_BYTE_WATCHDOG_MS = 4500;
 
 /**
  * Drives the investigation viewer. Two sources feed one reducer:
@@ -16,8 +20,23 @@ const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
  */
 export function useInvestigation() {
   const [state, dispatch] = useReducer(reduce, initialState);
+  const [waking, setWaking] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearWatchdog = useCallback(() => {
+    if (watchdogRef.current) {
+      clearTimeout(watchdogRef.current);
+      watchdogRef.current = null;
+    }
+    setWaking(false);
+  }, []);
+
+  // Fire-and-forget ping to start warming the (free-tier, cold-starting) backend.
+  const warm = useCallback(() => {
+    fetch(`${BACKEND}/health`).catch(() => {});
+  }, []);
 
   const stop = useCallback(() => {
     abortRef.current?.abort();
@@ -26,7 +45,8 @@ export function useInvestigation() {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-  }, []);
+    clearWatchdog();
+  }, [clearWatchdog]);
 
   const startLive = useCallback(
     async (question: string, datasetId?: string) => {
@@ -34,6 +54,11 @@ export function useInvestigation() {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
       dispatch({ type: "__start__", source: "live", question });
+      // First-byte watchdog: if nothing streams within the window, the free backend
+      // is likely waking up — flag it so the page can offer the recorded run.
+      // We deliberately do NOT abort the real request for slowness.
+      setWaking(false);
+      watchdogRef.current = setTimeout(() => setWaking(true), FIRST_BYTE_WATCHDOG_MS);
       try {
         const res = await fetch(`${BACKEND}/investigate`, {
           method: "POST",
@@ -42,6 +67,7 @@ export function useInvestigation() {
           signal: ctrl.signal,
         });
         if (!res.ok || !res.body) {
+          clearWatchdog();
           // Surface the backend's reason (e.g. the rate-limit message) if present.
           let msg = `backend responded ${res.status}`;
           try {
@@ -50,7 +76,15 @@ export function useInvestigation() {
           } catch {
             /* non-JSON error body — keep the status message */
           }
-          throw new Error(msg);
+          // A 429 is a live backend enforcing a limit — a distinct, friendly case,
+          // not the "couldn't reach the backend" transport framing.
+          dispatch({
+            type: "__error__",
+            message: msg,
+            kind: res.status === 429 ? "rate_limit" : "transport",
+            status: res.status,
+          });
+          return;
         }
 
         const reader = res.body.getReader();
@@ -59,6 +93,8 @@ export function useInvestigation() {
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
+          // First bytes are streaming — the backend is awake; drop the "waking" flag.
+          clearWatchdog();
           buf += decoder.decode(value, { stream: true });
           let idx: number;
           while ((idx = buf.indexOf("\n\n")) >= 0) {
@@ -71,13 +107,15 @@ export function useInvestigation() {
       } catch (e) {
         const err = e as { name?: string; message?: string };
         if (err?.name !== "AbortError") {
-          dispatch({ type: "__error__", message: String(err?.message ?? e) });
+          // A thrown error here is a real network/connection failure — transport kind.
+          dispatch({ type: "__error__", message: String(err?.message ?? e), kind: "transport" });
         }
       } finally {
+        clearWatchdog();
         abortRef.current = null;
       }
     },
-    [stop],
+    [stop, clearWatchdog],
   );
 
   const replay = useCallback(
@@ -99,5 +137,5 @@ export function useInvestigation() {
     [stop],
   );
 
-  return { state, startLive, replay, stop, backend: BACKEND };
+  return { state, startLive, replay, stop, warm, waking, backend: BACKEND };
 }

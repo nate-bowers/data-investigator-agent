@@ -19,7 +19,7 @@ export function LoopMeter({ state }: { state: ViewState }) {
 
   return (
     <div className="loop-meter">
-      <span className={`pulse pulse-${state.status}`} />
+      <span className={`pulse pulse-${state.status}`} aria-hidden="true" />
       <span className="lm-phase">{phase}</span>
       <span className="lm-sep">·</span>
       <span>{state.steps.length} steps</span>
@@ -30,7 +30,9 @@ export function LoopMeter({ state }: { state: ViewState }) {
         </>
       )}
       <span className="lm-sep">·</span>
-      <span className="lm-status">{status}</span>
+      <span className="lm-status" aria-live="polite">
+        {status}
+      </span>
       {state.model && <span className="lm-model">{state.model}</span>}
       {state.source === "recorded" && <span className="lm-badge">recorded run</span>}
     </div>

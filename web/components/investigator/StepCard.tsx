@@ -12,7 +12,7 @@ export function StepCard({ step }: { step: StepState }) {
     <article className={`step-card${errored ? " step-error" : ""}`}>
       <div className="step-rail">
         <div className={`step-chip${errored ? " chip-error" : ""}${isOrient ? " chip-orient" : ""}`}>
-          {isOrient ? "◎" : step.step}
+          {isOrient ? <span aria-hidden="true">◎</span> : step.step}
         </div>
       </div>
 

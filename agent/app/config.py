@@ -60,6 +60,8 @@ RATE_LIMIT_GLOBAL_DAY = _int("RATE_LIMIT_GLOBAL_DAY", 150)
 
 # --- CORS ---------------------------------------------------------------------
 # Comma-separated. Includes localhost for dev; add the Vercel prod URL in prod.
+# NEVER wildcard this ("*"): the backend calls a paid API, so an open origin list
+# lets any site drive spend from a visitor's browser. Keep it an explicit allowlist.
 ALLOWED_ORIGINS = [
     o.strip()
     for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")

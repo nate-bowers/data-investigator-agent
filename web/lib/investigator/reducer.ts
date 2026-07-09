@@ -30,13 +30,15 @@ export interface ViewState {
   stoppedReason?: string;
   capHit?: string;
   errorMessage?: string;
+  errorKind?: "transport" | "rate_limit"; // distinguishes a 429 from a real connection failure
+  errorStatus?: number; // HTTP status when the backend responded !ok
   source: "live" | "recorded" | null;
 }
 
 export type Action =
   | InvestigationEvent
   | { type: "__start__"; source: "live" | "recorded"; question?: string }
-  | { type: "__error__"; message: string }
+  | { type: "__error__"; message: string; kind?: "transport" | "rate_limit"; status?: number }
   | { type: "__reset__" };
 
 export const initialState: ViewState = { steps: [], status: "idle", source: null };
@@ -58,7 +60,13 @@ export function reduce(state: ViewState, action: Action): ViewState {
     case "__start__":
       return { ...initialState, status: "running", source: action.source, question: action.question };
     case "__error__":
-      return { ...state, status: "error", errorMessage: action.message };
+      return {
+        ...state,
+        status: "error",
+        errorMessage: action.message,
+        errorKind: action.kind ?? "transport",
+        errorStatus: action.status,
+      };
     default:
       break;
   }
