@@ -4,7 +4,7 @@
 
 **An autonomous data-analysis agent that investigates a dataset one question at a time, choosing each step from what the previous result showed.**
 
-🔗 **Live demo: https://web-mu-three-lu56la822j.vercel.app/investigator**
+🔗 **Live demo: https://investigator.natebowers.dev/investigator**
 
 I built Data Investigator to show I can build an agent end to end. The core is a loop I wrote by hand over the Anthropic Messages API, not a framework's agent runner. You give it a dataset and a question like *"why did signups drop in March?"*, and it works the problem: it writes a pandas snippet, runs it in a sandbox, reads the result, picks what to check next, fixes its own broken queries, and stops once it can answer. Every step streams to the UI as it happens.
 
