@@ -1,0 +1,458 @@
+[
+  {
+    "case_id": "sg_total",
+    "kind": "numeric",
+    "dataset": "signups",
+    "question": "How many total signups are in the dataset?",
+    "reference": "2224",
+    "answer": "There are **2,224 total signups** in the dataset. Each row represents one signup, and the dataset contains 2,224 rows in total.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=2224.0 tol=0.0 found=[2224.0, 2224.0, 2224.0]"
+    },
+    "grounding": {
+      "report_numbers": 3,
+      "direct": 3,
+      "derived": [],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (2224, 7)\n\ncolumns / dtypes:\nsignup_date    str\nuser_id        str\nchannel        str\ncampaign_id    str\ncountry        str\ndevice         str\nactivated      str\ndtype: object\n\nnull counts:\nsignup_date       0\nuser_id           0\nchannel           0\ncampaign_id    1099\ncountry           0\ndevice            0\nactivated         0\ndtype: int64\n\nsample rows:\n  signup_date user_id      channel  campaign_id country   device activated\n0  2024-01-01   u1001      organic          NaN      US   mobile        no\n1  2024-01-01   u1002  paid_search  cmp_ps_2024      US   mobile       yes\n2  2024-01-01   u1003  paid_search  cmp_ps_2024      US   mobile        no\n3  2024-01-01   u1004  paid_search  cmp_ps_2024      CA   mobile        no\n4  2024-01-01   u1005     referral          NaN      IN  desktop       yes\n\n2224"
+  },
+  {
+    "case_id": "sg_channel",
+    "kind": "categorical",
+    "dataset": "signups",
+    "question": "Which acquisition channel has the most signups overall?",
+    "reference": "organic",
+    "answer": "The **Organic** channel has the most signups overall with **722 signups**, representing ~32.5% of all 2,224 total signups. It is followed by Social (593), Paid Search (552), and Referral (357).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'organic'"
+    },
+    "grounding": {
+      "report_numbers": 10,
+      "direct": 9,
+      "derived": [
+        32.5
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (2224, 7)\n\ncolumns / dtypes:\nsignup_date    str\nuser_id        str\nchannel        str\ncampaign_id    str\ncountry        str\ndevice         str\nactivated      str\ndtype: object\n\nnull counts:\nsignup_date       0\nuser_id           0\nchannel           0\ncampaign_id    1099\ncountry           0\ndevice            0\nactivated         0\ndtype: int64\n\nsample rows:\n  signup_date user_id      channel  campaign_id country   device activated\n0  2024-01-01   u1001      organic          NaN      US   mobile        no\n1  2024-01-01   u1002  paid_search  cmp_ps_2024      US   mobile       yes\n2  2024-01-01   u1003  paid_search  cmp_ps_2024      US   mobile        no\n3  2024-01-01   u1004  paid_search  cmp_ps_2024      CA   mobile        no\n4  2024-01-01   u1005     referral          NaN      IN  desktop       yes\n\nDataFrame shape=(4, 2)\n       channel  signups\n0      organic      722\n1       social      593\n2  paid_search      552\n3     referral      357"
+  },
+  {
+    "case_id": "sg_activated",
+    "kind": "numeric",
+    "dataset": "signups",
+    "question": "What percentage of signups activated? Give a number.",
+    "reference": "54.7",
+    "answer": "**54.72%** of signups activated. Out of 2,224 total signups in the dataset, 1,217 users had `activated = yes`, yielding an activation rate of approximately **54.72%**.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=54.7 tol=1.5 found=[54.72, 2224.0, 1217.0, 54.72, 54.72, 1217.0, 2224.0]"
+    },
+    "grounding": {
+      "report_numbers": 7,
+      "direct": 5,
+      "derived": [
+        1217.0,
+        1217.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (2224, 7)\n\ncolumns / dtypes:\nsignup_date    str\nuser_id        str\nchannel        str\ncampaign_id    str\ncountry        str\ndevice         str\nactivated      str\ndtype: object\n\nnull counts:\nsignup_date       0\nuser_id           0\nchannel           0\ncampaign_id    1099\ncountry           0\ndevice            0\nactivated         0\ndtype: int64\n\nsample rows:\n  signup_date user_id      channel  campaign_id country   device activated\n0  2024-01-01   u1001      organic          NaN      US   mobile        no\n1  2024-01-01   u1002  paid_search  cmp_ps_2024      US   mobile       yes\n2  2024-01-01   u1003  paid_search  cmp_ps_2024      US   mobile        no\n3  2024-01-01   u1004  paid_search  cmp_ps_2024      CA   mobile        no\n4  2024-01-01   u1005     referral          NaN      IN  desktop       yes\n\nnp.float64(54.72122302158273)"
+  },
+  {
+    "case_id": "sg_march",
+    "kind": "causal",
+    "dataset": "signups",
+    "question": "Why did signups drop in March?",
+    "reference": "Only the social channel collapsed in March; its campaign_id went null because the social campaign was paused. The other channels stayed roughly flat, so the dip was a paused campaign, not a broad loss of demand.",
+    "answer": "**The March signup drop was almost entirely caused by the social campaign (`cmp_social_2024`) being paused that month.**\n\nHere's the full picture:\n- Overall signups fell from an average of ~385/month to just 292 in March \u2014 a shortfall of **93 signups**.\n- The `social` channel collapsed from ~114 signups/month (average across all other months) to just **20 in March** \u2014 a shortfall of **94 signups**, which accounts for **~102% of the total March drop**.\n- Every other channel (organic, paid_search, referral) performed at normal or slightly elevated levels in March.\n- In March, **zero** social signups were tied to `cmp_social_2024`. In every other month, 100% of social signups came from that campaign. The campaign was clearly paused or stopped in March and resumed in April.",
+    "accuracy": {
+      "correct": true,
+      "method": "judge",
+      "detail": "The agent's answer reaches the same core conclusion as the reference: the March signup drop was caused specifically by the social channel collapsing due to the social campaign being paused (evidenced by campaign_id going null), while all other channels remained roughly normal. Both answers agree on the root cause and that it was not a broad loss of demand."
+    },
+    "grounding": {
+      "report_numbers": 19,
+      "direct": 17,
+      "derived": [
+        100.0,
+        100.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 1,
+      "recovered": 1,
+      "exhausted": 0,
+      "recovery_rate": 1.0
+    },
+    "run_error": null,
+    "ledger_text": "shape: (2224, 7)\n\ncolumns / dtypes:\nsignup_date    str\nuser_id        str\nchannel        str\ncampaign_id    str\ncountry        str\ndevice         str\nactivated      str\ndtype: object\n\nnull counts:\nsignup_date       0\nuser_id           0\nchannel           0\ncampaign_id    1099\ncountry           0\ndevice            0\nactivated         0\ndtype: int64\n\nsample rows:\n  signup_date user_id      channel  campaign_id country   device activated\n0  2024-01-01   u1001      organic          NaN      US   mobile        no\n1  2024-01-01   u1002  paid_search  cmp_ps_2024      US   mobile       yes\n2  2024-01-01   u1003  paid_search  cmp_ps_2024      US   mobile        no\n3  2024-01-01   u1004  paid_search  cmp_ps_2024      CA   mobile        no\n4  2024-01-01   u1005     referral          NaN      IN  desktop       yes\n\nDataFrame shape=(6, 2)\n     month  signups\n0  2024-01      370\n1  2024-02      382\n2  2024-03      292\n3  2024-04      360\n4  2024-05      425\n5  2024-06      387\nDataFrame shape=(6, 4)\nchannel  organic  paid_search  referral  social\nmonth                                          \n2024-01      102           88        59     121\n2024-02      125           82        49     126\n2024-03      114           89        69      20\n2024-04      131           72        66      91\n2024-05      128          110        62     125\n2024-06      120          110        49     108\n=== Social by Country ===\ncountry  CA  DE  IN  UK  US\nmonth                      \n2024-01  19  12  23  13  54\n2024-02  28   9  22  22  45\n2024-03   4   3   3   1   9\n2024-04  15  13  14  13  36\n2024-05  26  12  21  19  47\n2024-06  11   8  31  21  37\n\n=== Social by Campaign ===\ncampaign_id  cmp_social_2024\nmonth                       \n2024-01                  121\n2024-02                  126\n2024-04                   91\n2024-05                  125\n2024-06                  108\n\nDataFrame shape=(6, 2)\nhas_campaign  False  True \nmonth                     \n2024-01           0    121\n2024-02           0    126\n2024-03          20      0\n2024-04           0     91\n2024-05           0    125\n2024-06           0    108\nAverage monthly signups (excl. March): 385\nMarch total signups:                   292\nOverall shortfall in March:            93\n\nAverage social signups/month (excl. March): 114\nMarch social signups:                        20\nSocial shortfall in March:                   94\n\nSocial shortfall accounts for 102% of the total March shortfall\n\nDataFrame shape=(24, 3)\n      month      channel  signups\n0   2024-01      organic      102\n1   2024-01  paid_search       88\n2   2024-01     referral       59\n3   2024-01       social      121\n4   2024-02      organic      125\n5   2024-02  paid_search       82\n6   2024-02     referral       49\n7   2024-02       social      126\n8   2024-03      organic      114\n9   2024-03  paid_search       89\n10  2024-03     referral       69\n11  2024-03       social       20\n12  2024-04      organic      131\n13  2024-04  paid_search       72\n14  2024-04     referral       66\n15  2024-04       social       91\n16  2024-05      organic      128\n17  2024-05  paid_search      110\n18  2024-05     referral       62\n19  2024-05       social      125"
+  },
+  {
+    "case_id": "sl_total",
+    "kind": "numeric",
+    "dataset": "sales",
+    "question": "How many orders are in the sales dataset?",
+    "reference": "1535",
+    "answer": "There are **1,535 orders** in the sales dataset. Each row in the dataset represents one order, and the DataFrame contains 1,535 rows in total across 6 columns (order_date, region, category, product, units, and unit_price).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=1535.0 tol=0.0 found=[1535.0, 1535.0, 6.0, 1535.0]"
+    },
+    "grounding": {
+      "report_numbers": 3,
+      "direct": 3,
+      "derived": [],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1535, 6)\n\ncolumns / dtypes:\norder_date      str\nregion          str\ncategory        str\nproduct         str\nunits         int64\nunit_price      str\ndtype: object\n\nnull counts:\norder_date    0\nregion        0\ncategory      0\nproduct       0\nunits         0\nunit_price    0\ndtype: int64\n\nsample rows:\n   order_date region category product  units unit_price\n0  2024-02-26   East        A      P5     11      113.0\n1  2024-08-18  South        C      P1      1      10.73\n2  2024-12-16  North        B      P4     11     174.09\n3  2024-01-04   East        B      P1      3     107.28\n4  2024-08-22  South        A      P5      6     194.19\n\n1535"
+  },
+  {
+    "case_id": "sl_region",
+    "kind": "categorical",
+    "dataset": "sales",
+    "question": "Which region has the most orders?",
+    "reference": "North",
+    "answer": "The **North** region has the most orders, with **480 orders** \u2014 ahead of East (360), South (360), and West (335).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'North'"
+    },
+    "grounding": {
+      "report_numbers": 7,
+      "direct": 7,
+      "derived": [],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1535, 6)\n\ncolumns / dtypes:\norder_date      str\nregion          str\ncategory        str\nproduct         str\nunits         int64\nunit_price      str\ndtype: object\n\nnull counts:\norder_date    0\nregion        0\ncategory      0\nproduct       0\nunits         0\nunit_price    0\ndtype: int64\n\nsample rows:\n   order_date region category product  units unit_price\n0  2024-02-26   East        A      P5     11      113.0\n1  2024-08-18  South        C      P1      1      10.73\n2  2024-12-16  North        B      P4     11     174.09\n3  2024-01-04   East        B      P1      3     107.28\n4  2024-08-22  South        A      P5      6     194.19\n\nDataFrame shape=(4, 2)\n  region  order_count\n0  North          480\n1   East          360\n2  South          360\n3   West          335"
+  },
+  {
+    "case_id": "sl_revenue",
+    "kind": "numeric",
+    "dataset": "sales",
+    "question": "What is the total revenue, computed as units times unit_price, across all orders?",
+    "reference": "1655547.22",
+    "answer": "The total revenue across all orders \u2014 computed as the sum of `units \u00d7 unit_price` \u2014 is **$1,655,547.22**. Note that 20 out of 1,535 rows had a non-numeric `unit_price` value (stored as `'unknown'`) and were excluded from the calculation; the remaining 1,515 valid rows were used.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=1655547.22 tol=1.0% found=[1655547.22, 20.0, 1535.0, 1515.0, 20.0, 20.0, 1655547.22]"
+    },
+    "grounding": {
+      "report_numbers": 7,
+      "direct": 6,
+      "derived": [
+        1515.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 1,
+      "recovered": 1,
+      "exhausted": 0,
+      "recovery_rate": 1.0
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1535, 6)\n\ncolumns / dtypes:\norder_date      str\nregion          str\ncategory        str\nproduct         str\nunits         int64\nunit_price      str\ndtype: object\n\nnull counts:\norder_date    0\nregion        0\ncategory      0\nproduct       0\nunits         0\nunit_price    0\ndtype: int64\n\nsample rows:\n   order_date region category product  units unit_price\n0  2024-02-26   East        A      P5     11      113.0\n1  2024-08-18  South        C      P1      1      10.73\n2  2024-12-16  North        B      P4     11     174.09\n3  2024-01-04   East        B      P1      3     107.28\n4  2024-08-22  South        A      P5      6     194.19\n\nnp.float64(1655547.22)\n{'invalid_unit_price_rows': 20, 'total_revenue': np.float64(1655547.22)}"
+  },
+  {
+    "case_id": "sl_sept",
+    "kind": "causal",
+    "dataset": "sales",
+    "question": "Why did the number of orders fall in September?",
+    "reference": "The West region's orders collapsed in September (about 5 orders versus roughly 30 in every other month). The other regions were stable, so the drop was specific to West.",
+    "answer": "The September order decline \u2014 from 130 orders every other month down to just 105 \u2014 is **entirely caused by a collapse in orders from the West region**. Every other region (East, North, South) maintained their normal order volumes in September. The West region, however, fell from a steady 30 orders/month to just **5 orders**, and its total units dropped from ~300 to only 36.\n\nWithin the West region, the drop is broad rather than product-specific:\n- **Products P3, P5, and P6 recorded zero orders** in September (vs. normal activity in August and October).\n- **Category C completely disappeared** in September for the West.\n- Nearly every product-category combination in the West had 0 orders in September.\n- The 5 orders that did occur were spread across different days (Sep 13, 17, 20, 22, 25), so it was not a total blackout but severely reduced activity across the whole month.\n\nThis pattern \u2014 perfectly normal in all other months, all other regions unaffected, all products/categories in the West affected simultaneously \u2014 strongly points to a **regional operational disruption** in the West (e.g., a system outage, warehouse/logistics issue, loss of a major regional account, or a data recording gap) rather than a product-specific or market-wide cause.",
+    "accuracy": {
+      "correct": true,
+      "method": "judge",
+      "detail": "The agent's core conclusion matches the reference: the September order drop was caused by a collapse in West region orders (dropping to ~5 from ~30), while all other regions remained stable. The extra detail about products, categories, and possible causes is supplementary and doesn't contradict the reference conclusion."
+    },
+    "grounding": {
+      "report_numbers": 20,
+      "direct": 19,
+      "derived": [
+        89.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1535, 6)\n\ncolumns / dtypes:\norder_date      str\nregion          str\ncategory        str\nproduct         str\nunits         int64\nunit_price      str\ndtype: object\n\nnull counts:\norder_date    0\nregion        0\ncategory      0\nproduct       0\nunits         0\nunit_price    0\ndtype: int64\n\nsample rows:\n   order_date region category product  units unit_price\n0  2024-02-26   East        A      P5     11      113.0\n1  2024-08-18  South        C      P1      1      10.73\n2  2024-12-16  North        B      P4     11     174.09\n3  2024-01-04   East        B      P1      3     107.28\n4  2024-08-22  South        A      P5      6     194.19\n\nDataFrame shape=(12, 2)\n   order_date  order_count\n0     2024-01          130\n1     2024-02          130\n2     2024-03          130\n3     2024-04          130\n4     2024-05          130\n5     2024-06          130\n6     2024-07          130\n7     2024-08          130\n8     2024-09          105\n9     2024-10          130\n10    2024-11          130\n11    2024-12          130\nDataFrame shape=(12, 4)\nregion      East  North  South  West\norder_date                          \n2024-01       30     40     30    30\n2024-02       30     40     30    30\n2024-03       30     40     30    30\n2024-04       30     40     30    30\n2024-05       30     40     30    30\n2024-06       30     40     30    30\n2024-07       30     40     30    30\n2024-08       30     40     30    30\n2024-09       30     40     30     5\n2024-10       30     40     30    30\n2024-11       30     40     30    30\n2024-12       30     40     30    30\nDataFrame shape=(12, 3)\ncategory     A   B   C\norder_date            \n2024-01     13   7  10\n2024-02     12  10   8\n2024-03      7  11  12\n2024-04      6  14  10\n2024-05     15   7   8\n2024-06     11   7  12\n2024-07      6  18   6\n2024-08     13   9   8\n2024-09      3   2   0\n2024-10      9  12   9\n2024-11      8   9  13\n2024-12      7   9  14\nDataFrame shape=(3, 6)\nproduct     P1  P2  P3  P4  P5  P6\norder_date                        \n2024-08      6   6   5   5   2   6\n2024-09      2   1   0   2   0   0\n2024-10      7   6   4   6   4   3\nDataFrame shape=(5, 4)\n     order_date category product  units\n20   2024-09-13        A      P4      1\n1066 2024-09-17        B      P2     15\n1155 2024-09-20        B      P1      9\n842  2024-09-22        A      P4      6\n62   2024-09-25        A      P1      5\nDataFrame shape=(3, 27)\nday      1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27\nmonth                                                                                                              \n2024-08   2   0   1   1   2   0   1   1   1   3   0   0   1   1   0   1   0   4   1   1   1   1   3   1   2   0   1\n2024-09   0   0   0   0   0   0   0   0   0   0   0   0   1   0   0   0   1   0   0   1   0   1   0   0   1   0   0\n2024-10   0   2   0   0   1   2   3   0   3   1   2   1   0   0   3   1   1   1   2   1   2   0   0   1   1   1   1\nDataFrame shape=(4, 2)\n        orders  unique_days\nregion                     \nEast        30           19\nNorth       40           22\nSouth       30           19\nWest         5            5\nProducts in West Aug: {'P3', 'P1', 'P2', 'P6', 'P5', 'P4'}\nProducts in West Sep: {'P1', 'P2', 'P4'}\nProducts in West Oct: {'P3', 'P1', 'P2', 'P6', 'P5', 'P4'}\n\nProducts MISSING in Sep but present in Aug: {'P3', 'P5', 'P6'}\nProducts MISSING in Sep but present in Oct: {'P3', 'P5', 'P6'}\n\nCategories in West Aug: {'A', 'B', 'C'}\nCategories in West Sep: {'A', 'B'}\nCategories MISSING in Sep: {'C'}\n\nDataFrame shape=(18, 2)\n   product category\n1       P1        C\n3       P1        B\n38      P1        A\n31      P2        A\n28      P2        C\n23      P2        B\n41      P3        C\n9       P3        B\n22      P3        A\n2       P4        B\n10      P4        A\n19      P4        C\n26      P5        B\n0       P5        A\n13      P5        C\n5       P6        B\n18      P6        C\n15      P6        A\nDataFrame shape=(18, 3)\nmonth             2024-08  2024-09  2024-10\nproduct category                           \nP1      A             3.0      1.0      2.0\n        B             0.0      1.0      4.0\n        C             3.0      0.0      1.0\nP2      A             4.0      0.0      1.0\n        B             1.0      1.0      2.0\n        C             1.0      0.0      3.0\nP3      A             1.0      0.0      1.0\n        B             2.0      0.0      1.0\n        C             2.0      0.0      2.0\nP4      A             1.0      2.0      4.0\n        B             3.0      0.0      0.0\n        C             1.0      0.0      2.0\nP5      A             1.0      0.0      1.0\n        B             0.0      0.0      3.0\n        C             1.0      0.0      0.0\nP6      A             3.0      0.0      0.0\n        B             3.0      0.0      2.0\n        C             0.0      0.0      1.0\nDataFrame shape=(12, 3)\n   order_date  order_count  total_units\n0     2024-01           30          283\n1     2024-02           30          299\n2     2024-03           30          310\n3     2024-04           30          341\n4     2024-05           30          306\n5     2024-06           30          320\n6     2024-07           30          255\n7     2024-08           30          345\n8     2024-09            5           36\n9     2024-10           30          327\n10    2024-11           30          308\n11    2024-12           30          291"
+  },
+  {
+    "case_id": "sp_total",
+    "kind": "numeric",
+    "dataset": "support_tickets",
+    "question": "How many support tickets are there?",
+    "reference": "1200",
+    "answer": "There are **1,200 support tickets** in the dataset.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=1200.0 tol=0.0 found=[1200.0, 1200.0]"
+    },
+    "grounding": {
+      "report_numbers": 2,
+      "direct": 2,
+      "derived": [],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1200, 5)\n\ncolumns / dtypes:\ncreated_date        str\ncategory            str\npriority            str\nresolution_hours    str\nsatisfied           str\ndtype: object\n\nnull counts:\ncreated_date        0\ncategory            0\npriority            0\nresolution_hours    0\nsatisfied           0\ndtype: int64\n\nsample rows:\n  created_date   category priority resolution_hours satisfied\n0   2024-10-08    account   medium             15.9       yes\n1   2024-05-11  technical      low             45.0       yes\n2   2024-01-23    billing   medium             15.4       yes\n3   2024-01-22    billing   medium              7.7       yes\n4   2024-09-06    account   medium             12.1       yes\n"
+  },
+  {
+    "case_id": "sp_category",
+    "kind": "categorical",
+    "dataset": "support_tickets",
+    "question": "Which ticket category is most common?",
+    "reference": "billing",
+    "answer": "The most common ticket category is **Billing**, with **480 tickets** out of 1,200 total \u2014 accounting for 40% of all tickets. The full ranking is:\n1. **Billing** \u2013 480\n2. **Technical** \u2013 313\n3. **Account** \u2013 241\n4. **Other** \u2013 166",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'billing'"
+    },
+    "grounding": {
+      "report_numbers": 11,
+      "direct": 10,
+      "derived": [
+        40.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1200, 5)\n\ncolumns / dtypes:\ncreated_date        str\ncategory            str\npriority            str\nresolution_hours    str\nsatisfied           str\ndtype: object\n\nnull counts:\ncreated_date        0\ncategory            0\npriority            0\nresolution_hours    0\nsatisfied           0\ndtype: int64\n\nsample rows:\n  created_date   category priority resolution_hours satisfied\n0   2024-10-08    account   medium             15.9       yes\n1   2024-05-11  technical      low             45.0       yes\n2   2024-01-23    billing   medium             15.4       yes\n3   2024-01-22    billing   medium              7.7       yes\n4   2024-09-06    account   medium             12.1       yes\n\nDataFrame shape=(4, 2)\n    category  count\n0    billing    480\n1  technical    313\n2    account    241\n3      other    166"
+  },
+  {
+    "case_id": "sp_satisfied",
+    "kind": "numeric",
+    "dataset": "support_tickets",
+    "question": "What percentage of tickets ended with the customer satisfied?",
+    "reference": "69.8",
+    "answer": "**69.83% of tickets ended with the customer satisfied.**\n\nOut of 1,200 tickets in the dataset, approximately 838 resulted in a satisfied customer (marked \"yes\"), while the remaining ~362 (30.17%) did not.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=69.8 tol=1.5 found=[69.83, 1200.0, 838.0, 362.0, 30.17, 69.83, 30.17]"
+    },
+    "grounding": {
+      "report_numbers": 7,
+      "direct": 5,
+      "derived": [
+        838.0,
+        362.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1200, 5)\n\ncolumns / dtypes:\ncreated_date        str\ncategory            str\npriority            str\nresolution_hours    str\nsatisfied           str\ndtype: object\n\nnull counts:\ncreated_date        0\ncategory            0\npriority            0\nresolution_hours    0\nsatisfied           0\ndtype: int64\n\nsample rows:\n  created_date   category priority resolution_hours satisfied\n0   2024-10-08    account   medium             15.9       yes\n1   2024-05-11  technical      low             45.0       yes\n2   2024-01-23    billing   medium             15.4       yes\n3   2024-01-22    billing   medium              7.7       yes\n4   2024-09-06    account   medium             12.1       yes\n\nSeries len=2 dtype=float64\nsatisfied\nyes    69.833333\nno     30.166667"
+  },
+  {
+    "case_id": "sp_resolve",
+    "kind": "categorical",
+    "dataset": "support_tickets",
+    "question": "Which ticket category takes the longest to resolve on average?",
+    "reference": "technical",
+    "answer": "The **Technical** ticket category takes the longest to resolve on average, with a mean resolution time of **40.92 hours** \u2014 more than 3\u00d7 longer than the next category (Account at 12.35 hours). The full ranking is:\n\n| Category | Avg. Resolution Hours |\n|---|---|\n| Technical | 40.92 |\n| Account | 12.35 |\n| Billing | 7.97 |\n| Other | 5.93 |",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'technical'"
+    },
+    "grounding": {
+      "report_numbers": 11,
+      "direct": 11,
+      "derived": [],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (1200, 5)\n\ncolumns / dtypes:\ncreated_date        str\ncategory            str\npriority            str\nresolution_hours    str\nsatisfied           str\ndtype: object\n\nnull counts:\ncreated_date        0\ncategory            0\npriority            0\nresolution_hours    0\nsatisfied           0\ndtype: int64\n\nsample rows:\n  created_date   category priority resolution_hours satisfied\n0   2024-10-08    account   medium             15.9       yes\n1   2024-05-11  technical      low             45.0       yes\n2   2024-01-23    billing   medium             15.4       yes\n3   2024-01-22    billing   medium              7.7       yes\n4   2024-09-06    account   medium             12.1       yes\n\nDataFrame shape=(4, 2)\n    category  avg_resolution_hours\n0  technical                 40.92\n1    account                 12.35\n2    billing                  7.97\n3      other                  5.93"
+  },
+  {
+    "case_id": "tp_avgpct",
+    "kind": "numeric",
+    "dataset": "tips",
+    "question": "What is the average tip as a percentage of the total bill?",
+    "reference": "19.1",
+    "answer": "The average tip as a percentage of the total bill is approximately **19.11%**. This was calculated by dividing each individual tip by its corresponding total bill, converting to a percentage, and then averaging across all 300 records in the dataset.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=19.1 tol=1.5 found=[19.11, 300.0, 100.0, 19.11]"
+    },
+    "grounding": {
+      "report_numbers": 4,
+      "direct": 3,
+      "derived": [
+        100.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (300, 7)\n\ncolumns / dtypes:\ntotal_bill    float64\ntip           float64\nsex               str\nsmoker            str\nday               str\ntime              str\nparty_size      int64\ndtype: object\n\nnull counts:\ntotal_bill    0\ntip           0\nsex           0\nsmoker        0\nday           0\ntime          0\nparty_size    0\ndtype: int64\n\nsample rows:\n   total_bill   tip     sex smoker  day    time  party_size\n0       22.44  5.04  Female     no  Sat  Dinner           4\n1       11.68  1.95  Female    yes  Thu  Dinner           2\n2       26.00  4.07    Male    yes  Sun   Lunch           3\n3       27.52  5.71    Male    yes  Sat  Dinner           3\n4        4.39  0.84    Male     no  Sat  Dinner           4\n\nnp.float64(19.1073328465008)"
+  },
+  {
+    "case_id": "tp_day",
+    "kind": "categorical",
+    "dataset": "tips",
+    "question": "Which day has the most records?",
+    "reference": "Sat",
+    "answer": "Saturday has the most records in the dataset, with 112 entries out of 300 total (over 37%). The full day breakdown is: Saturday (112), Sunday (69), Thursday (65), and Friday (54).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'Sat'"
+    },
+    "grounding": {
+      "report_numbers": 11,
+      "direct": 10,
+      "derived": [
+        37.0
+      ],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null,
+    "ledger_text": "shape: (300, 7)\n\ncolumns / dtypes:\ntotal_bill    float64\ntip           float64\nsex               str\nsmoker            str\nday               str\ntime              str\nparty_size      int64\ndtype: object\n\nnull counts:\ntotal_bill    0\ntip           0\nsex           0\nsmoker        0\nday           0\ntime          0\nparty_size    0\ndtype: int64\n\nsample rows:\n   total_bill   tip     sex smoker  day    time  party_size\n0       22.44  5.04  Female     no  Sat  Dinner           4\n1       11.68  1.95  Female    yes  Thu  Dinner           2\n2       26.00  4.07    Male    yes  Sun   Lunch           3\n3       27.52  5.71    Male    yes  Sat  Dinner           3\n4        4.39  0.84    Male     no  Sat  Dinner           4\n\nDataFrame shape=(4, 2)\n   day  count\n0  Sat    112\n1  Sun     69\n2  Thu     65\n3  Fri     54"
+  },
+  {
+    "case_id": "tp_party",
+    "kind": "causal",
+    "dataset": "tips",
+    "question": "Do larger parties tend to leave a bigger tip as a percentage of the bill?",
+    "reference": "Yes. Tip percentage rises with party size, from about 16 percent for parties of 1 to about 22 percent for parties of 6.",
+    "answer": "Yes \u2014 larger parties do tend to leave a bigger tip as a percentage of the bill, and the relationship is strong and statistically significant.\n\n**Key findings:**\n- Solo diners (party_size = 1) tip ~15.9% on average, while parties of 6 tip ~21.7% \u2014 a difference of nearly 6 percentage points.\n- The trend is monotonically increasing: every step up in party size corresponds to a higher average tip percentage.\n- The Pearson correlation between party size and tip percentage is **r = 0.69**, with a t-statistic of **16.5** (n = 300), which is overwhelmingly statistically significant (well beyond the |t| > 2 threshold for p < 0.05).",
+    "accuracy": {
+      "correct": true,
+      "method": "judge",
+      "detail": "The agent's answer reaches the same core conclusion as the reference: larger parties tend to leave a higher tip percentage. Both agree on the direction of the relationship (positive), the approximate range (around 16% for solo diners to ~22% for parties of 6), and the monotonically increasing trend. The agent provides additional statistical detail (correlation, t-statistic) but the main conclusion matches."
+    },
+    "grounding": {
+      "report_numbers": 10,
+      "direct": 10,
+      "derived": [],
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 1,
+      "recovered": 1,
+      "exhausted": 0,
+      "recovery_rate": 1.0
+    },
+    "run_error": null,
+    "ledger_text": "shape: (300, 7)\n\ncolumns / dtypes:\ntotal_bill    float64\ntip           float64\nsex               str\nsmoker            str\nday               str\ntime              str\nparty_size      int64\ndtype: object\n\nnull counts:\ntotal_bill    0\ntip           0\nsex           0\nsmoker        0\nday           0\ntime          0\nparty_size    0\ndtype: int64\n\nsample rows:\n   total_bill   tip     sex smoker  day    time  party_size\n0       22.44  5.04  Female     no  Sat  Dinner           4\n1       11.68  1.95  Female    yes  Thu  Dinner           2\n2       26.00  4.07    Male    yes  Sun   Lunch           3\n3       27.52  5.71    Male    yes  Sat  Dinner           3\n4        4.39  0.84    Male     no  Sat  Dinner           4\n\nDataFrame shape=(6, 3)\n            Mean Tip %  Median Tip %  Count\nparty_size                                 \n1                15.91         15.80     59\n2                17.72         17.52     39\n3                18.68         18.89     39\n4                19.96         20.13     53\n5                20.52         20.70     59\n6                21.67         22.17     51\nPearson r = 0.6917\nt-statistic = 16.5342 (df=298)\nn = 300\n|t| > 2? Yes \u2192 statistically significant\n"
+  }
+]

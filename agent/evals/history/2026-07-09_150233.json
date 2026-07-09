@@ -1,0 +1,425 @@
+[
+  {
+    "case_id": "sg_total",
+    "kind": "numeric",
+    "dataset": "signups",
+    "question": "How many total signups are in the dataset?",
+    "reference": "2224",
+    "answer": "There are **2,224 total signups** in the dataset. Each row represents one signup, and the dataset contains 2,224 rows with no missing values in the `user_id` or `signup_date` columns.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=2224.0 tol=0.0 found=[2224.0, 2224.0, 2224.0]"
+    },
+    "grounding": {
+      "report_numbers": 3,
+      "grounded": 3,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sg_channel",
+    "kind": "categorical",
+    "dataset": "signups",
+    "question": "Which acquisition channel has the most signups overall?",
+    "reference": "organic",
+    "answer": "The acquisition channel with the most signups overall is **organic**, with 722 signups. The full ranking is: Organic (722) > Social (593) > Paid Search (552) > Referral (357).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'organic'"
+    },
+    "grounding": {
+      "report_numbers": 9,
+      "grounded": 9,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sg_activated",
+    "kind": "numeric",
+    "dataset": "signups",
+    "question": "What percentage of signups activated? Give a number.",
+    "reference": "54.7",
+    "answer": "**54.72%** of signups activated. Out of 2,224 total signups in the dataset, the users with `activated = 'yes'` account for approximately 54.72% of all sign-ups.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=54.7 tol=1.5 found=[54.72, 2224.0, 54.72, 54.72, 2224.0]"
+    },
+    "grounding": {
+      "report_numbers": 5,
+      "grounded": 5,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sg_march",
+    "kind": "causal",
+    "dataset": "signups",
+    "question": "Why did signups drop in March?",
+    "reference": "Only the social channel collapsed in March; its campaign_id went null because the social campaign was paused. The other channels stayed roughly flat, so the dip was a paused campaign, not a broad loss of demand.",
+    "answer": "**The March signup drop was caused entirely by the social media campaign (`cmp_social_2024`) being paused/absent in March.**\n\nHere's the chain of evidence:\n- March had 292 signups vs. ~370\u2013382 in January and February \u2014 a drop of ~90.\n- Breaking down by channel, the **social channel collapsed from 126 signups in February to just 20 in March** (a loss of 106), while all other channels were stable or slightly up.\n- Investigating the social channel's March signups revealed that **all 20 had no campaign_id** \u2014 meaning zero activity from `cmp_social_2024`, the campaign that normally drives ~120 signups/month.\n- Social's net loss of 106 signups more than accounts for the total March drop of 90 (other channels like referral and paid_search actually grew slightly, partially offsetting it).\n\nIn short: `cmp_social_2024` went dark in March. Without that campaign running, social signups fell by ~84%, dragging total monthly signups down by ~24%. The campaign resumed in April and signups recovered.",
+    "accuracy": {
+      "correct": true,
+      "method": "judge",
+      "detail": "The agent's answer reaches the same core conclusion as the reference: the March signup drop was caused specifically by the social channel collapsing due to a paused social campaign (campaign_id went null/absent), while other channels remained stable. Both answers identify the same root cause \u2014 a paused social campaign \u2014 and rule out broad demand loss."
+    },
+    "grounding": {
+      "report_numbers": 28,
+      "grounded": 23,
+      "ungrounded": [
+        90.0,
+        90.0,
+        84.0,
+        100.0,
+        90.0
+      ],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 1,
+      "recovered": 1,
+      "exhausted": 0,
+      "recovery_rate": 1.0
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sl_total",
+    "kind": "numeric",
+    "dataset": "sales",
+    "question": "How many orders are in the sales dataset?",
+    "reference": "1535",
+    "answer": "There are **1,535 orders** in the sales dataset. Each row in the dataset represents one order, and the DataFrame contains 1,535 rows in total.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=1535.0 tol=0.0 found=[1535.0, 1535.0, 1535.0]"
+    },
+    "grounding": {
+      "report_numbers": 3,
+      "grounded": 3,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sl_region",
+    "kind": "categorical",
+    "dataset": "sales",
+    "question": "Which region has the most orders?",
+    "reference": "North",
+    "answer": "The **North** region has the most orders, with **480 orders** \u2014 ahead of East (360), South (360), and West (335).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'North'"
+    },
+    "grounding": {
+      "report_numbers": 7,
+      "grounded": 7,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sl_revenue",
+    "kind": "numeric",
+    "dataset": "sales",
+    "question": "What is the total revenue, computed as units times unit_price, across all orders?",
+    "reference": "1655547.22",
+    "answer": "The total revenue across all orders \u2014 computed as `units \u00d7 unit_price` \u2014 is **$1,655,547.22**. Note that 20 out of 1,535 rows had a non-numeric `unit_price` value (e.g., `'unknown'`) and were excluded from the calculation; the remaining 1,515 rows were used.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=1655547.22 tol=1.0% found=[1655547.22, 20.0, 1535.0, 1515.0, 20.0, 1535.0, 1655547.22]"
+    },
+    "grounding": {
+      "report_numbers": 7,
+      "grounded": 6,
+      "ungrounded": [
+        1515.0
+      ],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 1,
+      "recovered": 1,
+      "exhausted": 0,
+      "recovery_rate": 1.0
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sl_sept",
+    "kind": "causal",
+    "dataset": "sales",
+    "question": "Why did the number of orders fall in September?",
+    "reference": "The West region's orders collapsed in September (about 5 orders versus roughly 30 in every other month). The other regions were stable, so the drop was specific to West.",
+    "answer": "The September order decline is **entirely explained by a sharp drop in the West region**. Every other region (East, North, South) maintained their normal order counts throughout September. Here is a full breakdown of what happened:\n\n1. **Overall drop**: September had 105 orders vs. 130 in every other month \u2014 a shortfall of exactly 25 orders.\n2. **Root cause \u2014 West region**: The West region fell from its consistent monthly average of 30 orders down to just 5 in September (an 83% drop), accounting for **all 25 missing orders**.\n3. **Scope within West**: The drop was widespread \u2014 not isolated to one product or category:\n   - **Category C** had **0 orders** in September (normally ~10/month).\n   - **Products P3, P5, and P6** had **0 orders** in September (normally ~4\u20135 each/month).\n   - **P1, P2, and P4** each had roughly half their normal volume.\n4. **Timing**: The 5 West orders that did occur in September were all clustered in the second half of the month (13th\u201325th), suggesting the region may have been inactive or unresponsive for the first ~2 weeks.\n\nThis pattern \u2014 a near-total shutdown across all categories and most products, concentrated in one region \u2014 points to a **regional operational disruption in September** (e.g., a supply issue, staffing/logistics problem, or a data recording gap for the West region).",
+    "accuracy": {
+      "correct": true,
+      "method": "judge",
+      "detail": "The agent's core conclusion matches the reference: the September drop in orders was caused specifically by the West region's orders collapsing (from ~30 to ~5), while all other regions remained stable. The agent provides additional detail but the fundamental causal conclusion is the same."
+    },
+    "grounding": {
+      "report_numbers": 20,
+      "grounded": 19,
+      "ungrounded": [
+        83.0
+      ],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sp_total",
+    "kind": "numeric",
+    "dataset": "support_tickets",
+    "question": "How many support tickets are there?",
+    "reference": "1200",
+    "answer": "There are **1,200 support tickets** in the dataset.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=1200.0 tol=0.0 found=[1200.0, 1200.0]"
+    },
+    "grounding": {
+      "report_numbers": 2,
+      "grounded": 2,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sp_category",
+    "kind": "categorical",
+    "dataset": "support_tickets",
+    "question": "Which ticket category is most common?",
+    "reference": "billing",
+    "answer": "The most common ticket category is **billing**, with 480 tickets (40% of all 1,200 tickets). It is followed by technical (313), account (241), and other (166).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'billing'"
+    },
+    "grounding": {
+      "report_numbers": 10,
+      "grounded": 9,
+      "ungrounded": [
+        40.0
+      ],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sp_satisfied",
+    "kind": "numeric",
+    "dataset": "support_tickets",
+    "question": "What percentage of tickets ended with the customer satisfied?",
+    "reference": "69.8",
+    "answer": "**69.83% of tickets ended with the customer satisfied.** Out of 1,200 total tickets, approximately 838 customers were satisfied (\"yes\"), while the remaining ~362 (30.17%) were not.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=69.8 tol=1.5 found=[69.83, 1200.0, 838.0, 362.0, 30.17, 69.83, 30.17]"
+    },
+    "grounding": {
+      "report_numbers": 7,
+      "grounded": 5,
+      "ungrounded": [
+        838.0,
+        362.0
+      ],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "sp_resolve",
+    "kind": "categorical",
+    "dataset": "support_tickets",
+    "question": "Which ticket category takes the longest to resolve on average?",
+    "reference": "technical",
+    "answer": "The **\"technical\"** ticket category takes the longest to resolve on average, with a mean resolution time of **40.92 hours** \u2014 more than 3\u00d7 longer than the next category (\"account\" at 12.35 hours). The full ranking is:\n\n1. **Technical** \u2013 40.92 hrs\n2. **Account** \u2013 12.35 hrs\n3. **Billing** \u2013 7.97 hrs\n4. **Other** \u2013 5.93 hrs",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'technical'"
+    },
+    "grounding": {
+      "report_numbers": 10,
+      "grounded": 10,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 1,
+      "recovered": 1,
+      "exhausted": 0,
+      "recovery_rate": 1.0
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "tp_avgpct",
+    "kind": "numeric",
+    "dataset": "tips",
+    "question": "What is the average tip as a percentage of the total bill?",
+    "reference": "19.1",
+    "answer": "The average tip as a percentage of the total bill is approximately **19.11%**. This was calculated by dividing each individual tip by its corresponding total bill, multiplying by 100 to get a percentage, and then averaging those percentages across all 300 records in the dataset.",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "ref=19.1 tol=1.5 found=[19.11, 100.0, 300.0, 100.0, 300.0, 19.11]"
+    },
+    "grounding": {
+      "report_numbers": 6,
+      "grounded": 4,
+      "ungrounded": [
+        100.0,
+        100.0
+      ],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "tp_day",
+    "kind": "categorical",
+    "dataset": "tips",
+    "question": "Which day has the most records?",
+    "reference": "Sat",
+    "answer": "Saturday has the most records in the dataset, with 112 entries out of 300 total. The full ranking is: Saturday (112), Sunday (69), Thursday (65), and Friday (54).",
+    "accuracy": {
+      "correct": true,
+      "method": "exact",
+      "detail": "looked for 'Sat'"
+    },
+    "grounding": {
+      "report_numbers": 10,
+      "grounded": 10,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 0,
+      "recovered": 0,
+      "exhausted": 0,
+      "recovery_rate": null
+    },
+    "run_error": null
+  },
+  {
+    "case_id": "tp_party",
+    "kind": "causal",
+    "dataset": "tips",
+    "question": "Do larger parties tend to leave a bigger tip as a percentage of the bill?",
+    "reference": "Yes. Tip percentage rises with party size, from about 16 percent for parties of 1 to about 22 percent for parties of 6.",
+    "answer": "Yes, larger parties do tend to leave a bigger tip as a percentage of the bill \u2014 and the trend is clear and consistent.\n\nHere's the breakdown by party size:\n- **1 person:** ~15.9% avg tip\n- **2 people:** ~17.7%\n- **3 people:** ~18.7%\n- **4 people:** ~20.0%\n- **5 people:** ~20.5%\n- **6 people:** ~21.7%\n\nThe relationship is strongly positive, with both **Pearson r = 0.69** and **Spearman r = 0.69**, indicating a robust, monotonic correlation between party size and tip percentage.",
+    "accuracy": {
+      "correct": true,
+      "method": "judge",
+      "detail": "The agent's answer reaches the same core conclusion as the reference: larger parties tend to leave a bigger tip as a percentage of the bill, with tip percentage rising consistently from around 16% for parties of 1 to about 22% for parties of 6. The specific numbers and additional statistical details (Pearson/Spearman correlations) are extra but don't contradict the reference conclusion."
+    },
+    "grounding": {
+      "report_numbers": 14,
+      "grounded": 14,
+      "ungrounded": [],
+      "bad_evidence_steps": [],
+      "n_a": false
+    },
+    "selfcorrect": {
+      "errors": 1,
+      "recovered": 1,
+      "exhausted": 0,
+      "recovery_rate": 1.0
+    },
+    "run_error": null
+  }
+]

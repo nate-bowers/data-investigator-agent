@@ -102,6 +102,18 @@ def _close(a: float, b: float, tol: float, rel: bool) -> bool:
     return abs(a - b) <= tol
 
 
+def _derivable(n: float, ledger: list[float]) -> bool:
+    """True if n is a simple arithmetic result of grounded values (a difference, sum,
+    ratio, or percentage), so the agent computing it in prose is not a hallucination."""
+    vals = [x for x in ledger if x != 0][:150]
+    for a in vals:
+        for b in vals:
+            for cand in (a - b, a + b, (a / b) * 100, a * b, a / b):
+                if _close(n, cand, 0.02, True):
+                    return True
+    return False
+
+
 # ----------------------------------------------------------------------- graders
 
 JUDGE_MODEL = config.MODEL
@@ -168,17 +180,22 @@ def grade_grounding(run: RunResult) -> dict:
     report_text = (run.answer or "") + " " + " ".join(f.get("claim", "") for f in run.findings)
     report_nums = _numbers(report_text, skip_small_ints=True)
     ledger_nums = _numbers(run.ledger_text)
-    ungrounded = []
+    direct, derived, ungrounded = 0, [], []
     for n in report_nums:
-        if not any(_close(n, l, 0.01, True) or _close(n, l, 0.5, False) for l in ledger_nums):
-            ungrounded.append(n)
+        if any(_close(n, l, 0.01, True) or _close(n, l, 0.5, False) for l in ledger_nums):
+            direct += 1
+        elif _derivable(n, ledger_nums):
+            derived.append(n)  # a difference/percentage the agent computed from grounded values
+        else:
+            ungrounded.append(n)  # not in the ledger and not derivable: a possible hallucination
     # evidence_step integrity: each finding cites a step that produced a result
     result_steps = {e.get("step") for e in run.events if e.get("type") == "result"}
     bad_steps = [f.get("evidence_step") for f in run.findings
                  if f.get("evidence_step") not in result_steps]
     return {
         "report_numbers": len(report_nums),
-        "grounded": len(report_nums) - len(ungrounded),
+        "direct": direct,
+        "derived": derived,
         "ungrounded": ungrounded,
         "bad_evidence_steps": bad_steps,
         "n_a": False,

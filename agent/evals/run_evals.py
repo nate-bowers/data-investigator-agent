@@ -49,8 +49,8 @@ def selftest():
     g = harness.grade_grounding(run)
     s = harness.grade_selfcorrect(run)
     print(f"Recorded run: {len(events)} events, {len(run.findings)} findings, done={run.done_reason!r}")
-    print(f"GROUNDING     report_numbers={g['report_numbers']} grounded={g['grounded']} "
-          f"ungrounded={g['ungrounded']} bad_evidence_steps={g['bad_evidence_steps']}")
+    print(f"GROUNDING     report_numbers={g['report_numbers']} direct={g['direct']} "
+          f"derived={g['derived']} unexplained={g['ungrounded']} bad_evidence_steps={g['bad_evidence_steps']}")
     print(f"SELF-CORRECT  errors={s['errors']} recovered={s['recovered']} exhausted={s['exhausted']} "
           f"rate={s['recovery_rate']}")
     print("\nGraders run with no API. Use --limit 3 next for a live smoke test.")
@@ -67,7 +67,8 @@ def run_one(case, judge_client):
           + (f"  ERROR: {run.error}" if run.error else ""))
     return {"case_id": case.id, "kind": case.kind, "dataset": case.dataset_label,
             "question": case.question, "reference": case.reference, "answer": run.answer,
-            "accuracy": acc, "grounding": gnd, "selfcorrect": sc, "run_error": run.error}
+            "accuracy": acc, "grounding": gnd, "selfcorrect": sc, "run_error": run.error,
+            "ledger_text": run.ledger_text}
 
 
 def summarize(rows):
@@ -75,6 +76,7 @@ def summarize(rows):
     numeric = [r for r in rows if r["kind"] in ("numeric", "categorical")]
     causal = [r for r in rows if r["kind"] == "causal"]
     rep_nums = sum(r["grounding"].get("report_numbers", 0) for r in rows)
+    derived = sum(len(r["grounding"].get("derived", [])) for r in rows)
     ungrounded = sum(len(r["grounding"].get("ungrounded", [])) for r in rows)
     errs = sum(r["selfcorrect"]["errors"] for r in rows)
     recov = sum(r["selfcorrect"]["recovered"] for r in rows)
@@ -84,7 +86,7 @@ def summarize(rows):
           f"(exact {sum(1 for r in numeric if r['accuracy']['correct'])}/{len(numeric)}, "
           f"judge {sum(1 for r in causal if r['accuracy']['correct'])}/{len(causal)})")
     print(f"GROUNDING      {rep_nums - ungrounded}/{rep_nums} numbers in reports trace to a computed "
-          f"result  ({ungrounded} ungrounded)")
+          f"result  ({ungrounded} unexplained; {derived} were the agent's shown-work arithmetic)")
     if errs:
         print(f"SELF-CORRECT   {recov}/{errs} failed queries recovered within 3 retries "
               f"({recov / errs:.0%})")
@@ -93,10 +95,39 @@ def summarize(rows):
     print("=" * 68)
     print("\nSuggested bullet numbers (verify against results.json before using):")
     print(f"  - Answers {acc_total}/{n} held-out questions correctly, graded against known results.")
-    print(f"  - {ungrounded} ungrounded numbers across {n} runs; every figure traces to a computed step.")
+    print(f"  - {ungrounded} unexplained numbers across {n} runs; every figure traces to a computed "
+          f"result, directly or as the agent's own arithmetic on grounded values.")
     if errs:
         print(f"  - Recovers from {recov / errs:.0%} of failed queries within 3 retries by reading the "
               f"traceback and rewriting.")
+    return {"n": n, "accuracy_correct": acc_total, "grounding_report_numbers": rep_nums,
+            "grounding_ungrounded": ungrounded, "grounding_derived": derived,
+            "selfcorrect_errors": errs, "selfcorrect_recovered": recov}
+
+
+def write_history(rows, summ, stamp):
+    """Append a dated summary to evals/history and save the raw rows for that run."""
+    hist_dir = os.path.join(os.path.dirname(__file__), "history")
+    os.makedirs(hist_dir, exist_ok=True)
+    with open(os.path.join(hist_dir, f"{stamp}.json"), "w") as f:
+        json.dump(rows, f, indent=2, default=str)
+    n, errs, recov = summ["n"], summ["selfcorrect_errors"], summ["selfcorrect_recovered"]
+    grounded = summ["grounding_report_numbers"] - summ["grounding_ungrounded"]
+    block = (
+        f"## {stamp}  (model {harness.config.MODEL})\n\n"
+        f"- Accuracy: {summ['accuracy_correct']}/{n} correct\n"
+        f"- Grounding: {grounded}/{summ['grounding_report_numbers']} numbers traceable "
+        f"({summ['grounding_ungrounded']} unexplained, {summ.get('grounding_derived', 0)} shown-work arithmetic)\n"
+        f"- Self-correction: {recov}/{errs} failed queries recovered"
+        + (f" ({recov / errs:.0%})" if errs else " (no errors)") + "\n\n"
+    )
+    idx = os.path.join(hist_dir, "HISTORY.md")
+    need_header = (not os.path.exists(idx)) or os.path.getsize(idx) == 0
+    with open(idx, "a") as f:
+        if need_header:
+            f.write("# Eval run history\n\n")
+        f.write(block)
+    print(f"History written to history/{stamp}.json and history/HISTORY.md")
 
 
 def main():
@@ -106,6 +137,7 @@ def main():
     ap.add_argument("--dataset")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--workers", type=int, default=1)
+    ap.add_argument("--history", action="store_true", help="append a dated summary to evals/history")
     ap.add_argument("--out", default=os.path.join(os.path.dirname(__file__), "results.json"))
     args = ap.parse_args()
 
@@ -134,7 +166,11 @@ def main():
 
     with open(args.out, "w") as f:
         json.dump(rows, f, indent=2, default=str)
-    summarize(rows)
+    summ = summarize(rows)
+    if args.history:
+        from datetime import datetime
+
+        write_history(rows, summ, datetime.now().strftime("%Y-%m-%d_%H%M%S"))
     print(f"\nPer-case detail written to {args.out}")
 
 
