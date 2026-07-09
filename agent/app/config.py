@@ -29,8 +29,7 @@ def _int(name: str, default: int) -> int:
 
 # --- LLM ----------------------------------------------------------------------
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-# Live default = Sonnet (fast/cheap for a live demo). Set MODEL=claude-opus-4-8
-# for dev + recording the flawless run.
+# Live default = Sonnet (fast/cheap). Set MODEL=claude-opus-4-8 for higher quality.
 MODEL = os.getenv("MODEL", "claude-sonnet-4-6")
 MAX_OUTPUT_TOKENS = _int("MAX_OUTPUT_TOKENS", 8000)
 

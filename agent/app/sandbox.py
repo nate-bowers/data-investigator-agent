@@ -1,28 +1,28 @@
-"""Isolated execution of ONE LLM-written pandas snippet.
+"""Isolated execution of a single LLM-written pandas snippet.
 
 Public API::
 
     run_pandas(code, df_path, *, chart=None, timeout_s=None, cpu_s=None,
                mem_mb=None, max_chars=None) -> SandboxResult
 
-Why this exists: the agent writes its own pandas and we execute it. That is the
-project's real risk surface, so the sandbox is built first and hard.
+The agent writes its own pandas and we execute it, so this is the main risk
+surface.
 
-Isolation (v1 = subprocess; a container is the documented upgrade path — swap the
+Isolation (subprocess-based; a container is the documented upgrade path — swap the
 spawn internals behind this same signature):
-  * the snippet runs in a CHILD process, so a crash/hang/OOM can't take down the
+  * the snippet runs in a child process, so a crash/hang/OOM can't take down the
     FastAPI server;
   * resource limits are applied by the child on itself at startup (thread-safe —
     no ``preexec_fn``): RLIMIT_CPU (portable, SIGXCPU), RLIMIT_AS (Linux-enforced;
-    a no-op on macOS — documented), RLIMIT_FSIZE;
+    a no-op on macOS), RLIMIT_FSIZE;
   * a wall-clock timeout in the parent -> ``killpg`` the whole process group;
   * network denied two ways: ``unshare -n`` on Linux (kernel-level) + an in-child
     socket guard everywhere (the portable floor);
   * scrubbed minimal env, ``close_fds=True``, and the dataset passed by PATH — the
     data itself never crosses this boundary.
 
-``SandboxResult`` is a plain dataclass whose fields are exactly the contract the
-agent loop consumes (see the plan's "run_pandas result contract").
+``SandboxResult`` is a plain dataclass whose fields are the contract the agent
+loop consumes.
 """
 from __future__ import annotations
 

@@ -12,8 +12,8 @@ interface Props {
   onReplay: () => void;
 }
 
-// Question input + dataset picker (bundled demo, or upload your own CSV) + run/stop
-// + a "play recorded run" escape hatch. `datasetId` is owned by the page so the
+// Question input + dataset picker (bundled demo or uploaded CSV) + run/stop
+// + a "play recorded run" control. `datasetId` is owned by the page so the
 // context panel can show the current dataset's schema.
 export function QuestionBox({ running, backend, datasetId, onDatasetChange, onRun, onStop, onReplay }: Props) {
   const [question, setQuestion] = useState("Why did signups drop in March?");

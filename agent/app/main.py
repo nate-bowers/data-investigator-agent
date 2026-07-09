@@ -1,13 +1,12 @@
-"""FastAPI entrypoint — the thin HTTP shell around the agent loop.
+"""FastAPI entrypoint: the HTTP shell around the agent loop.
 
 Endpoints:
   GET  /health       liveness + which model is configured
   POST /investigate  runs the agent loop, streams the decision log as SSE
-  POST /upload       (Block 1b) accept a user CSV, return a dataset_id
+  POST /upload       accept a user CSV, return a dataset_id
 
-The agent loop itself lives in ``app/loop.py`` (Block 3). This module only wires
-HTTP + CORS + streaming; it stays deliberately thin so the orchestration logic is
-all in one readable place.
+The agent loop itself lives in ``app/loop.py``. This module only wires
+HTTP + CORS + streaming, keeping the orchestration logic in one place.
 """
 from __future__ import annotations
 
@@ -95,7 +94,7 @@ def _first_sentence(text: str) -> str:
 
 @app.get("/context")
 def context(dataset_id: str | None = None) -> dict:
-    """What's going INTO the agent: the tools it can call + the dataset schema.
+    """Return what goes into the agent: the tools it can call + the dataset schema.
     Powers the viewer's context panel so the agent's capabilities and the data are
     visible before it runs (and after a CSV upload)."""
     try:
@@ -122,9 +121,9 @@ def investigate(req: InvestigateRequest, request: Request) -> StreamingResponse:
     This is a *sync* endpoint on purpose: the agent loop makes blocking calls (the
     Anthropic SDK + the pandas sandbox subprocess), and Starlette runs sync path
     operations — and iterates the sync generator below — in a threadpool, so the
-    event loop is never blocked. Keeping the loop synchronous keeps it readable.
+    event loop is never blocked.
     """
-    # Throttle before spending any API tokens (429 -> the viewer offers the recording).
+    # Throttle before spending any API tokens.
     allowed, reason = limiter.allow(_client_ip(request))
     if not allowed:
         raise HTTPException(status_code=429, detail=reason)

@@ -1,8 +1,7 @@
 import type { ViewState } from "@/lib/investigator/reducer";
 import { recoveredCount } from "@/lib/investigator/reducer";
 
-// The at-a-glance legibility bar: phase, step count, self-corrections, and how it
-// stopped — so someone can glance and see "10 steps, 1 self-corrected, self-stopped".
+// Status bar showing phase, step count, self-corrections, and how the run stopped.
 export function LoopMeter({ state }: { state: ViewState }) {
   if (state.status === "idle") return null;
   const recovered = recoveredCount(state);

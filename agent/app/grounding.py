@@ -1,11 +1,9 @@
-"""Grounding — enforce "no result, no claim" in CODE, not just the prompt (Block 6).
+"""Grounding: enforce "no result, no claim" in code rather than relying on the prompt.
 
-``results_by_step`` is the ledger of every result the model actually saw. Before we
-emit the final report we walk each finding's ``evidence_step`` against that ledger:
-a claim pointing at a step that produced no real result is flagged ungrounded, so
-the trace can render it as such (a broken evidence link renders as broken — which is
-exactly what proves the check is real). The prompt asks for grounding; this makes it
-true.
+``results_by_step`` is the ledger of every result the model actually saw. Before
+emitting the final report we check each finding's ``evidence_step`` against that
+ledger: a claim pointing at a step that produced no real result is flagged
+ungrounded so the trace can render it as such.
 """
 from __future__ import annotations
 

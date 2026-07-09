@@ -4,9 +4,9 @@
   * ``"upload:<token>"``             -> a user-uploaded CSV in ``UPLOAD_DIR``.
 
 Uploaded CSVs are *untrusted* user input. Validation (size + parseability) happens
-at upload time; the real safety comes from the sandbox, which is what makes running
-LLM-written pandas over an arbitrary uploaded CSV safe. The dataset is always
-passed to the sandbox by PATH — never as inline data.
+at upload time; the isolation that makes running LLM-written pandas over an arbitrary
+uploaded CSV safe comes from the sandbox. The dataset is always passed to the sandbox
+by PATH — never as inline data.
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ _TOKEN_RE = re.compile(r"[a-f0-9]{12}")
 
 
 def _upload_path(token: str) -> str:
-    # Tokens are server-generated 12-char hex. REJECT anything else outright (never
+    # Tokens are server-generated 12-char hex. Reject anything else outright (never
     # sanitize-and-continue) so a crafted dataset_id can't be shaped into a path
     # that escapes UPLOAD_DIR.
     if not _TOKEN_RE.fullmatch(token):
@@ -57,8 +57,8 @@ def save_upload(raw: bytes) -> str:
 
 
 def describe(dataset_id: str | None) -> dict:
-    """Columns + row count for the context panel — so the UI can show what the
-    agent is looking at before it runs. Cheap for the demo + size-capped uploads."""
+    """Columns + row count for the context panel, so the UI can show the dataset
+    before the agent runs. Cheap given size-capped uploads."""
     import pandas as pd
 
     df = pd.read_csv(resolve(dataset_id))

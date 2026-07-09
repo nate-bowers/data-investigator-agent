@@ -1,6 +1,6 @@
-// The single rendering path for BOTH live and recorded runs: fold the SSE event
-// stream into ordered StepCards + a final report. Pure and unit-testable; all the
-// display semantics live here so live and replay can never drift.
+// The single rendering path for both live and recorded runs: fold the SSE event
+// stream into ordered StepCards + a final report. Pure and unit-testable; keeping
+// all display semantics here keeps live and replay in sync.
 
 import type { Finding, InvestigationEvent, Phase } from "./events";
 
@@ -13,7 +13,7 @@ export interface StepState {
   code?: string;
   result?: string;
   resultKind?: "profile" | "pandas";
-  error?: string; // traceback if THIS step's query errored
+  error?: string; // traceback if this step's query errored
   retry?: boolean; // a self-correction was signalled
   retryExhausted?: boolean;
   chart?: { kind: string; reason: string; png: string };

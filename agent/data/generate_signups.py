@@ -1,22 +1,20 @@
-"""Generate the demo dataset with a planted, non-obvious story.
+"""Generate the sample dataset with a planted, non-obvious story.
 
-Deterministic (fixed seed) so the demo and the recorded run are reproducible.
+Deterministic (fixed seed) so runs are reproducible.
 
-The story the agent should uncover from "why did signups drop in March?":
+The story to uncover from "why did signups drop in March?":
   * total signups dip in March;
-  * the dip is NOT uniform — only the `social` channel collapses in March
+  * the dip is not uniform — only the `social` channel collapses in March
     (organic / paid_search / referral stay flat);
   * social's collapse coincides with campaign_id going null for social rows in
-    March — a *paused campaign*, not lost demand;
+    March — a paused campaign, not lost demand;
   * social recovers in April.
 
 Red herring: `activated` is stored as the strings "yes"/"no" (as messy CSVs often
-are — and unlike "true"/"false", pandas does NOT coerce these to bool), so a naive
-activation-rate query (`.mean()`) throws a TypeError — a false lead that forces a
-traceback -> self-correction before the agent discards it. `signup_date` is a plain
-string AND a few rows hold the unparseable value "unknown", so the agent's first
-`pd.to_datetime(...)` raises until it adds errors='coerce' — a reliable, realistic
-self-correction on the very first analytical step.
+are — and unlike "true"/"false", pandas does not coerce these to bool), so a naive
+activation-rate query (`.mean()`) throws a TypeError. `signup_date` is a plain
+string AND a few rows hold the unparseable value "unknown", so a first
+`pd.to_datetime(...)` raises until it adds errors='coerce'.
 
 Run:  python agent/data/generate_signups.py
 """
@@ -43,7 +41,7 @@ def _campaign_id(channel: str, month: int) -> str:
     if channel == "paid_search":
         return "cmp_ps_2024"
     if channel == "social":
-        return "" if month == 3 else "cmp_social_2024"  # "" -> NaN: the smoking gun
+        return "" if month == 3 else "cmp_social_2024"  # "" -> NaN for social rows in March
     return ""  # organic / referral run no campaign
 
 
@@ -84,10 +82,9 @@ def main() -> None:
                     }
                 )
 
-    # Inject a handful of unparseable dates (messy real-world data). The agent's
-    # first date conversion `pd.to_datetime(...)` will RAISE until it adds
-    # errors='coerce' — a realistic, near-guaranteed self-correction trigger.
-    # Placed away from the top so the profile's head(5) sample still looks clean.
+    # Inject a handful of unparseable dates (messy real-world data). A first
+    # `pd.to_datetime(...)` raises until it adds errors='coerce'.
+    # Placed away from the top so a head(5) sample still looks clean.
     for idx in rng.sample(range(60, len(rows)), 8):
         rows[idx]["signup_date"] = "unknown"
 

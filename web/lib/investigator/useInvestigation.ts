@@ -8,11 +8,11 @@ import { initialState, reduce } from "./reducer";
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
 
 /**
- * Drives the investigation viewer. Two sources, ONE reducer:
+ * Drives the investigation viewer. Two sources feed one reducer:
  *  - startLive():  POST /investigate and read the text/event-stream with a fetch
  *                  streaming reader (carries the POST body, unlike EventSource).
- *  - replay():     dispatch a recorded event array on a timer — the demo insurance,
- *                  rendered through the identical reducer so it looks identical.
+ *  - replay():     dispatch a recorded event array on a timer, rendered through the
+ *                  same reducer as the live stream.
  */
 export function useInvestigation() {
   const [state, dispatch] = useReducer(reduce, initialState);
@@ -89,7 +89,7 @@ export function useInvestigation() {
         if (i >= events.length) return;
         const ev = events[i++];
         dispatch(ev);
-        // Pace so the eye can follow: give results / charts / the report a beat.
+        // Stagger delays by event type so results, charts, and the report get longer holds.
         const delay =
           ev.type === "chart" ? 380 : ev.type === "result" || ev.type === "error" || ev.type === "report" ? 320 : 170;
         timerRef.current = setTimeout(tick, delay);

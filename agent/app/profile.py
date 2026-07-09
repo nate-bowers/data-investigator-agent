@@ -1,9 +1,8 @@
-"""profile_data — always the agent's first move (Block 2).
+"""profile_data — the agent's first move.
 
-The ORIENT step. Before the agent forms a single hypothesis it must LOOK at the
-data, so it never invents a column that doesn't exist (the #1 failure mode). We
-implement it as a pandas snippet run through the SAME sandbox as everything else,
-so there is exactly one execution path.
+Profiles the data before the agent forms a hypothesis, so it doesn't reference a
+column that doesn't exist. Implemented as a pandas snippet run through the same
+sandbox as everything else, so there is exactly one execution path.
 """
 from __future__ import annotations
 

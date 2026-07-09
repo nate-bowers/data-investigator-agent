@@ -21,8 +21,7 @@ function inline(text: string): ReactNode[] {
 }
 
 // The grounded final report: the answer, then each claim linked to the step whose
-// result supports it (✓ grounded / ⚠ ungrounded — a broken link renders as broken,
-// which is what proves the grounding check is real).
+// result supports it (✓ grounded / ⚠ ungrounded).
 export function FinalReport({ state }: { state: ViewState }) {
   if (!state.report) return null;
   const { answer, findings } = state.report;

@@ -1,9 +1,9 @@
-"""The 7-case sandbox test plan (build plan Block 1).
+"""Sandbox isolation tests.
 
-Proves the isolation guarantees hold: a clean run works, a broken snippet returns
-a verbatim traceback (the self-correction fuel), output is bounded, wall-clock and
-CPU runaways are killed, memory is capped (Linux), the network is denied, and a
-requested chart renders.
+Checks that the isolation guarantees hold: a clean run works, a broken snippet
+returns a verbatim traceback, output is bounded, wall-clock and CPU runaways are
+killed, memory is capped (Linux), the network is denied, and a requested chart
+renders.
 """
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def test_traceback_verbatim_on_error(df_path):
     r = run_pandas("df['does_not_exist']", df_path)
     assert not r.ok
     assert r.traceback is not None
-    assert "KeyError" in r.traceback  # the model reads this to fix itself
+    assert "KeyError" in r.traceback
 
 
 def test_output_is_bounded(df_path):

@@ -1,9 +1,9 @@
-"""The system prompt — frames the model as an INVESTIGATOR, not a query-writer.
+"""The system prompt: frames the model as an investigator rather than a query-writer.
 
-The whole project rests on this being a genuine agent: the model decides its own
-path at runtime. The prompt encodes the investigative posture (orient -> check ->
-decide -> verify -> conclude) so even simple questions traverse a visible loop, plus
-the grounding + chart rules that make the output trustworthy and legible.
+The model decides its own path at runtime. The prompt encodes the investigative
+posture (orient -> check -> decide -> verify -> conclude) so even simple questions
+traverse the loop, plus the grounding and chart rules that keep the output trustworthy
+and legible.
 """
 from __future__ import annotations
 

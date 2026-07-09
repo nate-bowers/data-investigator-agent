@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-// What's going INTO the agent: the tools it can call + the dataset schema. Fetched
-// from the backend's /context so the panel reflects the real agent (and updates for
-// uploaded CSVs); a fallback keeps it populated when the backend is cold.
+// The agent's input context: the tools it can call plus the dataset schema. Fetched
+// from the backend's /context so the panel reflects the current agent config (and
+// updates for uploaded CSVs); a fallback keeps it populated when the backend is cold.
 
 export interface AgentContext {
   tools: { name: string; description: string }[];

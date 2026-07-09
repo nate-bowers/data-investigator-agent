@@ -1,13 +1,11 @@
-"""The agent's tool surface — three tools, on purpose (Block 3).
+"""The agent's tool surface: three tools.
 
-Orchestration proficiency is shown by HOW the agent sequences a tiny set of tools
-at runtime, not by having many. Each tool is a small JSON schema the model sees and
-chooses among.
+Each tool is a JSON schema the model sees and chooses among at runtime.
 
-  profile_data()  -> look at the data (forced first)
-  run_pandas()    -> the workhorse: test ONE hypothesis with a pandas snippet,
-                     optionally choosing a chart to visualize the finding
-  finish()        -> declare the question answered (the self-termination signal)
+  profile_data()  -> inspect the data (forced first)
+  run_pandas()    -> test one hypothesis with a pandas snippet, optionally
+                     attaching a chart to visualize the finding
+  finish()        -> declare the question answered
 """
 from __future__ import annotations
 

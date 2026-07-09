@@ -1,4 +1,4 @@
-"""Loop invariants, tested with a MOCKED Anthropic client (no API calls, no key).
+"""Loop invariants, tested with a mocked Anthropic client (no API calls, no key).
 
 These lock down the mechanics that must not regress:
   * the assistant turn is appended before its tool_result (the API handshake);
@@ -56,7 +56,7 @@ class FakeClient:
 
     def create(self, **kwargs):
         # Snapshot the messages list — the loop mutates it in place, so we must
-        # capture the sequence AT CALL TIME, not a live reference to the final state.
+        # capture the sequence at call time, not a live reference to the final state.
         rec = dict(kwargs)
         rec["messages"] = list(kwargs.get("messages", []))
         self.calls.append(rec)

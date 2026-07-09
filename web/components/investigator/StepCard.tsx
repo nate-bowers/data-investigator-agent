@@ -1,8 +1,8 @@
 import type { StepState } from "@/lib/investigator/reducer";
 
-// One reasoning step, framed as an explicit tool call: the agent decides to CALL a
-// tool -> the INPUT it passed -> what it RETURNED. An errored step turns amber and
-// shows the self-correction badge; the fix lands in a following card.
+// Renders one reasoning step as a tool call: the tool, its input, and what it
+// returned. An errored step turns amber and shows the self-correction badge; the
+// fix lands in a following card.
 export function StepCard({ step }: { step: StepState }) {
   const errored = step.status === "error";
   const isOrient = step.phase === "orient";

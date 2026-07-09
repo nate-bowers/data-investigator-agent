@@ -1,4 +1,4 @@
-"""Sandbox child process — runs ONE LLM-written pandas snippet, then exits.
+"""Sandbox child process — runs one LLM-written pandas snippet, then exits.
 
 Lifecycle (all inside this short-lived process):
   1. read a JSON payload from stdin: {code, df_path, chart, max_chars, cpu_s, mem_mb}
@@ -162,14 +162,14 @@ def main() -> None:
         ns: dict = {"df": df, "pd": pd}
         compiled, captured_last = _compile_capturing_last_expr(code)
         with contextlib.redirect_stdout(stdout_buf):
-            exec(compiled, ns)  # noqa: S102 — executing model code is the whole point
+            exec(compiled, ns)  # noqa: S102 — executing model-written code is intentional here
 
         # Result: an explicit `result` var wins; otherwise the last bare expression.
         value = ns.get("result", ns.get("__lastexpr__") if captured_last else None)
         result["result_repr"] = _bounded(_repr_result(value, max_chars), max_chars)
         result["stdout"] = _bounded(stdout_buf.getvalue(), max_chars)
 
-        # Optional chart — rendered from the RESULT (the finding), not the raw df.
+        # Optional chart — rendered from the result value, not the raw df.
         if chart_spec:
             try:
                 from charts import render_chart  # sibling module (agent/app on sys.path)
@@ -184,7 +184,7 @@ def main() -> None:
         result["traceback"] = _bounded(traceback.format_exc(), max_chars * 2)
         result["stdout"] = _bounded(stdout_buf.getvalue(), max_chars)
 
-    # Bypass any stdout redirection and write ONLY the JSON to the real channel.
+    # Bypass any stdout redirection and write only the JSON to the real channel.
     sys.__stdout__.write(json.dumps(result))
     sys.__stdout__.flush()
 

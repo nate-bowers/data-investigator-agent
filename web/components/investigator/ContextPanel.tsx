@@ -1,8 +1,7 @@
 import type { AgentContext } from "@/lib/investigator/context";
 
-// The agent's "world", always visible: what it can DO (its tools) and what it's
-// LOOKING AT (the dataset schema). This is the "what's going in" half of the story;
-// the trace on the right is "what's coming out".
+// Renders the agent's inputs: the tools it can call and the dataset schema it
+// operates on.
 export function ContextPanel({ ctx }: { ctx: AgentContext }) {
   return (
     <aside className="context-panel">

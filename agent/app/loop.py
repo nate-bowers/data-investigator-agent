@@ -1,27 +1,24 @@
-"""THE agent loop — the orchestration core (Blocks 3-6). This is the resume.
+"""The agent loop: a hand-written tool-use loop over the Anthropic Messages API.
 
-Read this top to bottom until you can whiteboard it cold. The one idea: this is a
-WHILE loop, not a sequence. Each turn we ask the model what to do next; it emits a
-tool call; we run the tool; we feed the result back; it decides its next move from
-what it saw. NOTHING here hardcodes the investigation path — delete every `if step
-==` line and it is still an agent.
+This is a while loop, not a fixed sequence. Each turn we ask the model what to do
+next; it emits a tool call; we run the tool; we feed the result back; it decides its
+next move from what it saw. The investigation path is not hardcoded.
 
-The loop is a GENERATOR: it ``yield``s decision-log events (SSE frames) as they
-happen, so the browser watches the agent think in real time. FastAPI iterates this
-sync generator in a threadpool, so the blocking Anthropic + sandbox calls don't
-stall the server. The stream of events IS the decision log — there is no separate
-logging pass.
+The loop is a generator: it ``yield``s decision-log events (SSE frames) as they
+happen, so the browser can watch the agent in real time. FastAPI iterates this sync
+generator in a threadpool, so the blocking Anthropic + sandbox calls don't stall the
+server. The stream of events is the decision log — there is no separate logging pass.
 
-Key mechanics worth internalizing (you'll be quizzed on these):
+Mechanics to note:
   * The handshake: append the assistant turn (which contains the `tool_use` block)
-    to `messages` BEFORE the matching `tool_result`. The API rejects a tool_result
+    to `messages` before the matching `tool_result`. The API rejects a tool_result
     that doesn't follow its tool_use.
-  * "Decide next move" lives in the next `messages.create` call — not in our code.
+  * Choosing the next move lives in the next `messages.create` call, not in our code.
     Our code only executes whatever tool the model asked for.
   * Self-correction: a sandbox error comes back as a `tool_result` with
     `is_error=True`; the model reads the traceback next turn and rewrites.
-  * Termination: the model calls `finish` (the real stop). The loop cap is a
-    separate, visible safety net, not the thing that decides "done".
+  * Termination: the model calls `finish`. The loop cap is a separate safety net,
+    not the thing that decides "done".
 """
 from __future__ import annotations
 
@@ -46,7 +43,7 @@ def run_investigation(
         client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
 
     # The conversation. The system prompt sets the posture; the first user turn is
-    # the task. Everything after this is built BY the loop, turn by turn.
+    # the task. Everything after this is built by the loop, turn by turn.
     messages: list[dict] = [
         {
             "role": "user",
@@ -65,9 +62,9 @@ def run_investigation(
     yield emitter.run_start(question, config.MODEL)
 
     while True:
-        # -- HARD GUARDS (reliability). Checked BEFORE every model call so the agent
-        #    can neither spiral nor overspend. These are safety nets, not control
-        #    flow: they never pick a tool or a phase. Delete them and it still works.
+        # -- Hard guards. Checked before every model call so the agent can neither
+        #    spiral nor overspend. These are safety nets, not control flow: they
+        #    never pick a tool or a phase.
         if step >= config.MAX_STEPS:
             yield emitter.cap_hit(step, "max_steps")
             yield from _forced_finish(client, messages, results_by_step, emitter, step, "max_steps")
@@ -77,8 +74,8 @@ def run_investigation(
             yield from _forced_finish(client, messages, results_by_step, emitter, step, "token_budget")
             return
 
-        # -- ORIENT is forced on step 0 ONLY, and only to make the agent LOOK (never
-        #    to answer). After step 0 the model chooses its own tool every turn.
+        # -- Force profile_data on step 0 so the model sees the schema before it
+        #    hypothesizes. After step 0 the model chooses its own tool every turn.
         #    Forcing a specific tool is incompatible with extended thinking, so step 0
         #    runs with thinking off (profiling needs no reasoning anyway).
         first_step = step == 0
@@ -96,12 +93,10 @@ def run_investigation(
         )
         tokens_used += _tokens(resp)
 
-        # The visible "it decided its next move" moment: the model's reasoning + why
-        # it stopped this turn.
+        # Emit the model's reasoning + why it stopped this turn.
         yield emitter.decision(step, _thinking_text(resp) or _assistant_text(resp), resp.stop_reason)
 
-        # -- TERMINATION A (the real one): the model called finish(). IT decided it
-        #    was done — no counter involved. Ground the report, emit it, stop.
+        # -- Termination A: the model called finish(). Ground the report, emit it, stop.
         finish_block = _first_tool(resp, "finish")
         if finish_block is not None:
             report = grounding.ground_check(finish_block.input, results_by_step)
@@ -109,8 +104,8 @@ def run_investigation(
             yield emitter.done(step, "finish")
             return
 
-        # -- TERMINATION B (rare): the model produced plain text and no tool. Nudge it
-        #    once to act or finish, then continue the loop.
+        # -- Termination B: the model produced plain text and no tool. Nudge it once
+        #    to act or finish, then continue the loop.
         if resp.stop_reason == "end_turn":
             messages.append({"role": "assistant", "content": resp.content})
             messages.append(
@@ -122,7 +117,7 @@ def run_investigation(
             step += 1
             continue
 
-        # -- ACT. Append the assistant turn FIRST (the tool_use), THEN run each tool
+        # -- Act. Append the assistant turn first (the tool_use), then run each tool
         #    and collect its result. Order matters: a tool_result must follow its
         #    tool_use in the transcript.
         messages.append({"role": "assistant", "content": resp.content})
@@ -147,8 +142,8 @@ def run_investigation(
                 )
             # (finish is handled above; there is no other tool)
 
-        # Feed all tool results back as the next user turn. On the NEXT iteration the
-        # model reads them, interprets, and decides the next move. THIS is the loop.
+        # Feed all tool results back as the next user turn. On the next iteration the
+        # model reads them, interprets, and decides the next move.
         messages.append({"role": "user", "content": tool_results})
         step += 1
 
@@ -158,10 +153,9 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
     the updated ``consecutive_errors`` count. A generator — ``yield from`` it and
     capture the return value.
 
-    This is where reliability-under-mess (Block 4) lives: an error is handed back to
-    the model verbatim as ``is_error=True`` so it can self-correct, but a lead that
-    keeps failing is abandoned after a per-step cap so a hopeless snippet can't loop
-    forever.
+    An error is handed back to the model verbatim as ``is_error=True`` so it can
+    self-correct, but a lead that keeps failing is abandoned after a per-step cap so
+    a hopeless snippet can't loop forever.
     """
     inp = block.input or {}
     code = inp.get("code", "")
@@ -176,13 +170,13 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
         content = run.result_repr or run.stdout or ""
         results_by_step[step] = _summarize(content)
         yield emitter.result(step, "pandas", content)
-        # Block 5: the model chose whether/how to chart; we just render what it asked.
+        # The model chose whether/how to chart; we just render what it asked.
         if run.chart_png and isinstance(chart, dict):
             yield emitter.chart(step, chart.get("kind", ""), chart.get("reason", ""), run.chart_png)
         tool_results.append(_tool_result(block.id, _labeled(step, content), is_error=False))
         return 0  # success resets the error streak
 
-    # -- error path: the mechanism the whole project is built to show --------------
+    # -- error path ----------------------------------------------------------------
     consecutive_errors += 1
     traceback_text = run.traceback or run.error or "unknown error"
     yield emitter.error(step, traceback_text, attempt=consecutive_errors - 1)
@@ -210,9 +204,9 @@ def _run_pandas_tool(block, df_path, step, consecutive_errors, results_by_step, 
 
 
 def _forced_finish(client, messages, results_by_step, emitter, step, reason):
-    """Loop-cap safety net: ask the model to write a grounded report from ONLY what
-    it already has. Never an open-ended continuation — this is the guard firing, not
-    the agent deciding it's done.
+    """Loop-cap safety net: ask the model to write a grounded report from only what
+    it already has. Not an open-ended continuation — this fires when a guard trips,
+    not when the agent decides it's done.
     """
     messages.append(
         {
@@ -266,7 +260,7 @@ def _model_call(client, messages, *, tool_choice, thinking_on):
 
 
 def _apply_prompt_cache(messages) -> None:
-    """Keep exactly ONE prompt-cache breakpoint, on the last block of the last
+    """Keep exactly one prompt-cache breakpoint, on the last block of the last
     message, so the whole growing prefix (tools + system + every prior turn) is
     written once and re-read at ~0.1x on each subsequent turn.
 

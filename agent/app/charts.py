@@ -1,12 +1,11 @@
-"""Render a chart the AGENT chose.
+"""Render a chart from an agent-supplied spec.
 
-The agent decides *whether* to chart and *which* kind + columns + reason; this
-module just draws it. Kept deliberately dumb — the intelligence (and the interview
-value) is the runtime choice, not the plotting engine. Charts are drawn from the
-step's RESULT (the finding), not the raw dataframe.
+The caller decides whether to chart and which kind + columns + reason; this
+module just draws it. Charts are drawn from the step's result (the finding),
+not the raw dataframe.
 
-Returns a base64-encoded PNG string, which travels cleanly over SSE and inside the
-recorded-run JSON with zero client-side charting dependency.
+Returns a base64-encoded PNG string, which travels cleanly over SSE and inside
+the recorded-run JSON with zero client-side charting dependency.
 """
 from __future__ import annotations
 
